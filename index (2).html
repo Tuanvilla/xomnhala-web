@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xóm Nhà Lá Tech | Tuấn Villa</title>
+    <meta name="description" content="Xóm Nhà Lá Tech - Đam mê AI Agent, Tự động hoá & Khám phá Công nghệ. Chia sẻ ứng dụng thực chiến và góc tâm sự của Tuấn Villa.">
+    <meta property="og:title" content="Xóm Nhà Lá Tech | Tuấn Villa">
+    <meta property="og:description" content="Kho ứng dụng thực chiến & Góc tâm sự công nghệ của Tuấn Villa.">
+    <meta property="og:url" content="https://xomnhala.tech">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: rgba(18, 24, 38, 0.75);
+            --surface-hover: rgba(26, 35, 54, 0.9);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(6, 182, 212, 0.4);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-cyan: #06b6d4;
+            --primary-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 16px 60px;
+            background-image: 
+                radial-gradient(circle at 10% 15%, rgba(6, 182, 212, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 90% 75%, rgba(139, 92, 246, 0.12) 0%, transparent 45%);
+            background-attachment: fixed;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 860px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        /* Hero Header */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 16px;
+            padding: 10px 0 10px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 104px;
+            height: 104px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-glow {
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-purple));
+            filter: blur(12px);
+            opacity: 0.7;
+            animation: pulse-glow 3.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0% { opacity: 0.5; transform: scale(0.96); }
+            100% { opacity: 0.85; transform: scale(1.05); }
+        }
+
+        .avatar {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #111827;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .badge-live {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--accent-green);
+        }
+
+        .dot-pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        h1 {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 30%, var(--primary-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .author-subtitle {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .author-subtitle span {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .bio-text {
+            font-size: 16px;
+            color: var(--text-muted);
+            max-width: 580px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Quick Action Channels */
+        .social-strip {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--text-main);
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .social-btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-cyan);
+            background: var(--surface-hover);
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.2);
+        }
+
+        .social-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Navigation Filter Tabs */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(18, 24, 38, 0.5);
+            padding: 6px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(8px);
+            width: fit-content;
+            margin: 0 auto;
+        }
+
+        .tab-btn {
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(139, 92, 246, 0.2));
+            color: var(--primary-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.35);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Section Headings */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-badge {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+        }
+
+        /* Apps Grid */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .app-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            backdrop-filter: blur(12px);
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-hover);
+            box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5);
+            background: var(--surface-hover);
+        }
+
+        .app-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .app-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+
+        .app-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .app-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.3;
+        }
+
+        .app-tag {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary-cyan);
+        }
+
+        .app-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .app-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tech-pill {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+        }
+
+        .app-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary-cyan);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .app-action:hover {
+            color: #38bdf8;
+        }
+
+        /* Blog Section */
+        .stories-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .story-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            backdrop-filter: blur(12px);
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .story-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 10px 24px -6px rgba(139, 92, 246, 0.15);
+            background: var(--surface-hover);
+        }
+
+        .story-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+
+        .story-category {
+            padding: 2px 10px;
+            border-radius: 12px;
+            background: rgba(139, 92, 246, 0.15);
+            color: #c084fc;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(139, 92, 246, 0.25);
+        }
+
+        .story-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.4;
+        }
+
+        .story-snippet {
+            font-size: 14.5px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .story-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary-cyan);
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Reader Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(16px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-container {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 760px;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8);
+            transform: translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.9);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 28px 24px 40px;
+            overflow-y: auto;
+            color: #e2e8f0;
+            font-size: 16px;
+            line-height: 1.8;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .modal-body h2 {
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.35;
+            background: linear-gradient(135deg, #ffffff 40%, var(--primary-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 13.5px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-body p {
+            margin-bottom: 8px;
+        }
+
+        .callout-box {
+            background: rgba(6, 182, 212, 0.08);
+            border-left: 3px solid var(--primary-cyan);
+            padding: 14px 18px;
+            border-radius: 0 10px 10px 0;
+            margin: 12px 0;
+            font-style: italic;
+            color: #cbd5e1;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #64748b;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        footer span {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 28px; }
+            .apps-grid { grid-template-columns: 1fr; }
+            .social-strip { justify-content: stretch; }
+            .social-btn { flex: 1 1 calc(50% - 10px); justify-content: center; }
+            .modal-body { padding: 20px 16px 30px; font-size: 15px; }
+            .modal-body h2 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="container">
+        <!-- Hero Header -->
+        <header class="hero">
+            <div class="avatar-wrapper">
+                <div class="avatar-glow"></div>
+                <div class="avatar">⚡</div>
+            </div>
+
+            <div class="badge-live">
+                <span class="dot-pulse"></span>
+                <span>Active & Building • 2026</span>
+            </div>
+
+            <h1>Xóm Nhà Lá Tech</h1>
+            <div class="author-subtitle">
+                Tuấn Villa <span>• Kỹ sư Hạ tầng Datacenter (VNPT-IT)</span>
+            </div>
+
+            <p class="bio-text">
+                Nơi một gã đàn ông U40 trải lòng về chuyện đời, chuyện nghề và ngọn lửa đam mê với AI Agent, Tự động hoá &amp; Hạ tầng Mạng Viễn thông.
+            </p>
+
+            <!-- Social Action Links -->
+            <div class="social-strip">
+                <a href="https://t.me/Tuan_Villa" target="_blank" rel="noopener noreferrer" class="social-btn">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                    <span>Telegram (@Tuan_Villa)</span>
+                </a>
+
+                <a href="https://www.facebook.com/tuan.villa.1" target="_blank" rel="noopener noreferrer" class="social-btn">
+                    <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <span>Facebook Cá Nhân</span>
+                </a>
+
+                <a href="https://github.com/Tuanvilla" target="_blank" rel="noopener noreferrer" class="social-btn">
+                    <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    <span>GitHub Profile</span>
+                </a>
+
+                <a href="mailto:admin@xomnhala.tech" class="social-btn">
+                    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    <span>admin@xomnhala.tech</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="filterView('all', this)">Tất Cả</button>
+            <button class="tab-btn" onclick="filterView('apps', this)">Ứng Dụng</button>
+            <button class="tab-btn" onclick="filterView('stories', this)">Góc Tâm Sự</button>
+        </nav>
+
+        <!-- Section 1: Kho Ứng Dụng & Công Cụ -->
+        <section id="section-apps">
+            <div class="section-header">
+                <div class="section-title">
+                    <span>⚡</span> Kho Ứng Dụng &amp; Công Cụ
+                </div>
+                <div class="section-badge">4 Sản phẩm</div>
+            </div>
+
+            <div class="apps-grid">
+                <!-- App 1: VNPT IDC Trực Ca Extension -->
+                <div class="app-card">
+                    <div class="app-header">
+                        <div class="app-icon">🏢</div>
+                        <div class="app-meta">
+                            <span class="app-title">VNPT IDC Trực Ca</span>
+                            <span class="app-tag">Tiện ích Trình duyệt</span>
+                        </div>
+                    </div>
+                    <p class="app-desc">
+                        Extension tự động hóa giám sát ca trực onsite tại Datacenter Nam Thăng Long. Duy trì session keep-alive, tự động điểm danh và giảm thiểu thao tác lặp lại.
+                    </p>
+                    <div class="app-badges">
+                        <span class="tech-pill">Chrome Ext</span>
+                        <span class="tech-pill">Tampermonkey</span>
+                        <span class="tech-pill">Keep-Alive</span>
+                        <span class="tech-pill">Nội bộ VNPT</span>
+                    </div>
+                    <div class="app-action" onclick="openStory('app-idc')">
+                        <span>Xem chi tiết tính năng &rarr;</span>
+                    </div>
+                </div>
+
+                <!-- App 2: Javis OS (Second Brain) -->
+                <div class="app-card">
+                    <div class="app-header">
+                        <div class="app-icon">🤖</div>
+                        <div class="app-meta">
+                            <span class="app-title">Javis OS (Second Brain)</span>
+                            <span class="app-tag">Hệ sinh thái AI Agent</span>
+                        </div>
+                    </div>
+                    <p class="app-desc">
+                        Trợ lý cá nhân tự trị hoạt động 24/7. Điều khiển qua Telegram, kết nối đa mô hình (Gemini, Claude, Codex) và lưu trữ tri thức tích luỹ vĩnh viễn.
+                    </p>
+                    <div class="app-badges">
+                        <span class="tech-pill">Python</span>
+                        <span class="tech-pill">FastMCP</span>
+                        <span class="tech-pill">Telegram Bot</span>
+                        <span class="tech-pill">Autonomous</span>
+                    </div>
+                    <div class="app-action" onclick="openStory('app-javis')">
+                        <span>Khám phá kiến trúc hệ thống &rarr;</span>
+                    </div>
+                </div>
+
+                <!-- App 3: 8 Gems Gemini Vận Hành -->
+                <div class="app-card">
+                    <div class="app-header">
+                        <div class="app-icon">💎</div>
+                        <div class="app-meta">
+                            <span class="app-title">Bộ 8 Gems Gemini</span>
+                            <span class="app-tag">Tự Động Hoá M&amp;E</span>
+                        </div>
+                    </div>
+                    <p class="app-desc">
+                        Hệ thống prompt tùy biến chuyên sâu cho hạ tầng phòng máy: xử lý sự cố cấp bách M1/M2/M3, trích xuất quy trình kỹ thuật, lọc email và phân loại tài liệu.
+                    </p>
+                    <div class="app-badges">
+                        <span class="tech-pill">Gemini Pro</span>
+                        <span class="tech-pill">Quy trình IDC</span>
+                        <span class="tech-pill">M&amp;E Troubleshooting</span>
+                    </div>
+                    <div class="app-action" onclick="openStory('app-gems')">
+                        <span>Xem danh mục 8 Gems &rarr;</span>
+                    </div>
+                </div>
+
+                <!-- App 4: Trợ Lý Dịch Tài Liệu Kỹ Thuật -->
+                <div class="app-card">
+                    <div class="app-header">
+                        <div class="app-icon">📚</div>
+                        <div class="app-meta">
+                            <span class="app-title">Dịch Tài Liệu Chuẩn IDC</span>
+                            <span class="app-tag">Tool Xử Lý Văn Bản</span>
+                        </div>
+                    </div>
+                    <p class="app-desc">
+                        Giải pháp dịch tài liệu kiến trúc máy tính và datacenter sang tiếng Việt: giữ nguyên vị trí hình ảnh, dịch chữ trong ảnh và xuất file DOCX/PDF chuẩn form.
+                    </p>
+                    <div class="app-badges">
+                        <span class="tech-pill">Python-Docx</span>
+                        <span class="tech-pill">OCR Engine</span>
+                        <span class="tech-pill">Dịch giữ ảnh</span>
+                    </div>
+                    <div class="app-action" onclick="openStory('app-translator')">
+                        <span>Xem quy trình xử lý &rarr;</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Góc Tâm Sự & Bài Viết -->
+        <section id="section-stories">
+            <div class="section-header">
+                <div class="section-title">
+                    <span>☕</span> Góc Tâm Sự &amp; Chia Sẻ
+                </div>
+                <div class="section-badge">Mới nhất</div>
+            </div>
+
+            <div class="stories-list">
+                <!-- Story 1 (Bài mở bát) -->
+                <article class="story-card" onclick="openStory('story-1')">
+                    <div class="story-meta-row">
+                        <span class="story-category">Tâm sự mỏng</span>
+                        <span>•</span>
+                        <span>02 Tháng 11, 2026</span>
+                        <span>•</span>
+                        <span>5 phút đọc</span>
+                    </div>
+                    <h3 class="story-title">Gã cao bồi U40, những đêm trực Datacenter và ngọn lửa mang tên AI Agent</h3>
+                    <p class="story-snippet">
+                        Bước qua tuổi 40, giữa tiếng rít đều đặn của hàng trăm giàn quạt máy chủ lạnh ngắt 20 độ C, tôi nhận ra mình không thể đứng yên nhìn thế giới AI thay đổi từng giờ. Cuộc sống này, nếu không có cái gì đó để đam mê thì chán chết...
+                    </p>
+                    <div class="story-footer">
+                        <span>Đọc toàn bộ bài viết &rarr;</span>
+                        <span style="color: var(--text-muted); font-weight: normal;">Bởi Tuấn Villa</span>
+                    </div>
+                </article>
+
+                <!-- Story 2 -->
+                <article class="story-card" onclick="openStory('story-2')">
+                    <div class="story-meta-row">
+                        <span class="story-category">Hành trình Tech</span>
+                        <span>•</span>
+                        <span>01 Tháng 11, 2026</span>
+                        <span>•</span>
+                        <span>3 phút đọc</span>
+                    </div>
+                    <h3 class="story-title">Từ chiếc tên miền 0đ trong đêm đến hệ sinh thái Xóm Nhà Lá Tech</h3>
+                    <p class="story-snippet">
+                        Chuyện săn được tên miền xomnhala.tech lúc nửa đêm, kéo GitHub Pages làm hosting vĩnh viễn và thiết lập email doanh nghiệp chuyển tiếp về Gmail. Đôi khi những thứ miễn phí nếu biết tận dụng lại mang đến cảm giác sướng rơn...
+                    </p>
+                    <div class="story-footer">
+                        <span>Đọc toàn bộ bài viết &rarr;</span>
+                        <span style="color: var(--text-muted); font-weight: normal;">Bởi Tuấn Villa</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div>Domain: <span>xomnhala.tech</span> • Email: <span>admin@xomnhala.tech</span></div>
+            <div>&copy; 2026 Xóm Nhà Lá Tech • Góc công nghệ &amp; tâm sự của Tuấn Villa</div>
+        </footer>
+    </main>
+
+    <!-- Reader Modal Window -->
+    <div class="modal-overlay" id="readerModal" onclick="closeModalOnBackdrop(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <span id="modalCategory" class="story-category">Bài viết</span>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalContent">
+                <!-- Nội dung bài viết được nạp động tại đây -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Script điều khiển Tab & Modal -->
+    <script>
+        // Kho dữ liệu bài viết
+        const storiesData = {
+            'story-1': {
+                category: 'Tâm sự mỏng • Tuổi 40',
+                title: 'Gã cao bồi U40, những đêm trực Datacenter và ngọn lửa mang tên AI Agent',
+                date: '02 Tháng 11, 2026 • 5 phút đọc • Tác giả: Tuấn Villa',
+                content: `
+                    <p>Chào anh em, mình là Tuấn. Một gã đàn ông trung niên đã bước qua cái tuổi 40, làm việc hàng ngày với hệ thống điện, lạnh, máy nổ và hàng ngàn mét dây cáp quang tại Trung tâm Dữ liệu (IDC Nam Thăng Long).</p>
+                    
+                    <p>Người ngoài nhìn vào thường bảo: <em>"Mấy ông làm hạ tầng mạng với viễn thông chắc khô như ngói, suốt ngày cờ lê, mỏ lết với thông số PDU, Chiller đau cả đầu"</em>. Họ nói cũng có phần đúng. Nhưng có một thứ họ không thấy: đó là những đêm trực ca vắng lặng từ 17h chiều hôm trước đến 8h sáng hôm sau.</p>
+                    
+                    <p>Giữa tiếng gió rít ù ù của hàng trăm rack server đang cõng dữ liệu cả nước, nhiệt độ phòng máy luôn giữ lạnh buốt 20 độ C, xung quanh là sự tĩnh lặng tuyệt đối của màn đêm. Đó chính là lúc cái chất "cao bồi" bên trong mình lại trỗi dậy mạnh mẽ nhất.</p>
+
+                    <div class="callout-box">
+                        "Cuộc sống bước qua tuổi 40, nếu không có một đam mê gì đó để theo đuổi và vận động trí não mỗi ngày thì chán chết!"
+                    </div>
+
+                    <p>Khi làn sóng AI bùng nổ, bạn bè đồng trang lứa nhiều người tặc lưỡi: <em>"Thôi, già rồi, cơm áo gạo tiền cho vợ con là đủ, học thêm mấy cái chat bot làm gì cho mệt óc"</em>. Nhưng mình thì không nghĩ thế. Mình sợ cái cảm giác bị cuộc sống bào mòn, sợ cảm giác chấp nhận dậm chân tại chỗ.</p>
+
+                    <p>Mình bắt đầu lao vào mày mò AI không phải để đi chém gió hay làm chuyện đao to búa lớn. Nó bắt đầu từ một lý do rất thực tế: <strong>mình lười làm những việc lặp đi lặp lại</strong>.</p>
+                    
+                    <p>Trực ca phải giám sát giữ phiên? Mình tự viết cái Extension để nó tự động hóa. Có những tài liệu tiếng Anh dài ngoằng về kiến trúc máy tính? Mình dựng công cụ để nó tự dịch, tự giữ nguyên từng vị trí ảnh. Cần giải quyết sự cố M&E nhanh lúc nửa đêm? Mình tạo ra 8 con Gem Gemini đóng vai chuyên gia bóc tách ngay tài liệu quy trình.</p>
+
+                    <p>Và đỉnh điểm là <strong>Javis OS</strong>: một hệ thống trợ lý ảo chạy ngầm trên chiếc máy tính ở nhà, có Second Brain tích lũy tri thức riêng, kết nối thẳng về Telegram để nhắc việc, tổng hợp tin tức và hỗ trợ mình mọi lúc mọi nơi.</p>
+
+                    <p><strong>Xóm Nhà Lá Tech</strong> này được dựng lên cũng từ tinh thần đó. Nó không phải một trang web bóng bẩy của một tập đoàn công nghệ triệu đô. Nó đơn giản là cái góc nhỏ của một gã thích mày mò, nơi mình chia sẻ những ứng dụng mình tự làm được, viết vài dòng tâm sự mỏng trên trời dưới bể, và hy vọng kết nối được với những anh em cùng tần số đam mê.</p>
+
+                    <p>Cảm ơn anh em đã ghé thăm góc nhỏ này. Chúc anh em luôn giữ được ngọn lửa của riêng mình, dù ở bất kỳ độ tuổi nào!</p>
+                `
+            },
+            'story-2': {
+                category: 'Hành trình Tech • 0đ',
+                title: 'Từ chiếc tên miền 0đ trong đêm đến hệ sinh thái Xóm Nhà Lá Tech',
+                date: '01 Tháng 11, 2026 • 3 phút đọc • Tác giả: Tuấn Villa',
+                content: `
+                    <p>Nhiều người nghĩ muốn có một website cá nhân mang tên miền riêng, kèm email doanh nghiệp chuyên nghiệp thì phải tốn tiền triệu mỗi năm để thuê hosting, mua tên miền và duy trì server.</p>
+                    
+                    <p>Nhưng là dân kỹ thuật thực chiến, mình luôn có một sở thích đặc biệt: <strong>Tận dụng tối đa tài nguyên miễn phí của thế giới công nghệ để biến thành sản phẩm hoàn chỉnh mà chi phí đúng nghĩa 0 đồng</strong>.</p>
+
+                    <p>Trang web xomnhala.tech này chính là một minh chứng sống động:</p>
+                    <p>- <strong>Tên miền riêng xomnhala.tech:</strong> Nhận mã tài trợ từ sự kiện công nghệ Hacktoberfest, đăng ký miễn phí 1 năm trọn vẹn 0đ.</p>
+                    <p>- <strong>Hosting toàn cầu:</strong> Sử dụng GitHub Pages của Microsoft. Tốc độ cực nhanh, chịu tải không giới hạn, tích hợp sẵn chứng chỉ bảo mật HTTPS xanh lá mà không tốn 1 xu.</p>
+                    <p>- <strong>Email doanh nghiệp admin@xomnhala.tech:</strong> Cấu hình bản ghi MX và SPF định tuyến chuyển tiếp (forwarding) qua ImprovMX, thư gửi đến tự động bay thẳng về Gmail cá nhân trong 3 giây.</p>
+
+                    <div class="callout-box">
+                        "Cái cảm giác tự tay gõ từng bản ghi DNS, thấy tên miền được phân giải toàn cầu và hòm thư riêng hoạt động trơn tru... nó mang lại sự thỏa mãn mà tiền bạc không mua được."
+                    </div>
+
+                    <p>Mỗi bước đi trong quá trình hoàn thiện hệ sinh thái này, mình đều lưu lại cẩn thận. Anh em nào muốn tự tay dựng một góc cá nhân như thế này, cứ nhắn qua Telegram, mình sẵn sàng chia sẻ toàn bộ cách làm!</p>
+                `
+            },
+            'app-idc': {
+                category: 'Chi tiết Ứng dụng',
+                title: 'VNPT IDC Trực Ca Extension',
+                date: 'Công cụ nội bộ • Đang hoạt động',
+                content: `
+                    <p><strong>Mục đích:</strong> Tự động hoá quy trình giám sát và hỗ trợ kỹ sư trực ca tại Datacenter Nam Thăng Long (VNPT-IT).</p>
+                    <p><strong>Tính năng chính:</strong></p>
+                    <p>- Cơ chế Keep-Alive thông minh, chống timeout phiên làm việc sau 30 phút không thao tác.</p>
+                    <p>- Hỗ trợ nhận diện và thao tác nhanh các nút nghiệp vụ trên hệ thống ca trực.</p>
+                    <p>- Tối ưu hóa trải nghiệm trên trình duyệt Chrome và Microsoft Edge.</p>
+                    <div class="callout-box">Ứng dụng phục vụ nội bộ ca trực nhằm nâng cao chất lượng vận hành và đảm bảo an toàn thông tin.</div>
+                `
+            },
+            'app-javis': {
+                category: 'Kiến trúc Hệ thống',
+                title: 'Javis OS - Hệ điều hành Second Brain & AI Agent',
+                date: 'Hệ thống tự trị • Multi-Engine',
+                content: `
+                    <p><strong>Javis OS</strong> là hệ sinh thái trợ lý ảo cá nhân được Tuấn Villa xây dựng để tự động hoá toàn diện công việc và cuộc sống:</p>
+                    <p>- <strong>Bộ não thứ hai (Second Brain):</strong> Cơ chế lưu trữ tri thức compounding, tích luỹ một lần và dùng mãi mãi qua cấu trúc Wiki và Memory.</p>
+                    <p>- <strong>Đa mô hình (Multi-Engine):</strong> Tích hợp linh hoạt Gemini 3.8 Flash, Claude Code, OpenAI Codex tuỳ theo từng nhiệm vụ cụ thể.</p>
+                    <p>- <strong>Giao tiếp qua Telegram:</strong> Bot cá nhân phục vụ điều khiển hệ thống, gửi nhận tài liệu và nhắc hẹn theo thời gian thực.</p>
+                `
+            },
+            'app-gems': {
+                category: 'Danh mục Công cụ',
+                title: 'Bộ 8 Gems Gemini Vận Hành & Tự Động Hoá',
+                date: 'Prompt Engineering • Gemini Pro',
+                content: `
+                    <p>Bộ sưu tập 8 Gems AI chuyên biệt được thiết kế để giải quyết dứt điểm các bài toán thực tế:</p>
+                    <p>1. <strong>Gem Vận hành M&E:</strong> Tra cứu nhanh thông số kỹ thuật điện/lạnh/UPS/máy nổ IDC.</p>
+                    <p>2. <strong>Gem Xử lý sự cố cấp bách:</strong> Hướng dẫn quy trình chuẩn xử lý sự cố cấp độ M1, M2, M3.</p>
+                    <p>3. <strong>Gem Trích xuất quy trình:</strong> Đọc tài liệu tiêu chuẩn dài và tóm tắt thành checklist thực thi.</p>
+                    <p>4. <strong>Gem Lọc & Dọn hòm thư:</strong> Phân loại mail công việc, bóc tách hạn nộp KPI và bài thi an toàn thông tin.</p>
+                    <p>5. <strong>Gem Tối ưu hoá Prompt:</strong> Chuẩn hoá yêu cầu kỹ thuật thành prompt sắc bén.</p>
+                    <p>6. <strong>Gem Phân tích hình ảnh:</strong> Đọc bảng đồng hồ đo, sơ đồ mạch điện và tài liệu scan.</p>
+                    <p>7. <strong>Gem Soạn thảo văn bản kỹ thuật:</strong> Lập báo cáo sự cố và biên bản bàn giao ca trực.</p>
+                    <p>8. <strong>Gem Trợ lý thường nhật:</strong> Quản lý ghi chú nhanh và nhắc việc cá nhân.</p>
+                `
+            },
+            'app-translator': {
+                category: 'Chi tiết Tool',
+                title: 'Trợ Lý Dịch Thuật Giữ Nguyên Hình Ảnh',
+                date: 'Python Script • OCR AI',
+                content: `
+                    <p><strong>Bài toán:</strong> Khi đọc các giáo trình công nghệ nước ngoài (như Computer Architecture, Networking), việc dịch văn bản thường làm mất hoặc xáo trộn cấu trúc hình ảnh minh hoạ.</p>
+                    <p><strong>Giải pháp:</strong></p>
+                    <p>- Tự động bóc tách từng trang văn bản và tọa độ hình ảnh.</p>
+                    <p>- Ứng dụng OCR dịch thuật trực tiếp nội dung chữ tiếng Anh trong ảnh sang tiếng Việt chuẩn kỹ thuật.</p>
+                    <p>- Tự động đóng gói lại thành file DOCX và PDF hoàn chỉnh, giữ nguyên vẹn 100% bố cục trang gốc.</p>
+                `
+            }
+        };
+
+        // Lọc hiển thị giữa Apps và Stories
+        function filterView(type, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const sectionApps = document.getElementById('section-apps');
+            const sectionStories = document.getElementById('section-stories');
+
+            if (type === 'all') {
+                sectionApps.style.display = 'block';
+                sectionStories.style.display = 'block';
+            } else if (type === 'apps') {
+                sectionApps.style.display = 'block';
+                sectionStories.style.display = 'none';
+            } else if (type === 'stories') {
+                sectionApps.style.display = 'none';
+                sectionStories.style.display = 'block';
+            }
+        }
+
+        // Mở bài viết trong Reader Modal
+        function openStory(id) {
+            const story = storiesData[id];
+            if (!story) return;
+
+            document.getElementById('modalCategory').textContent = story.category;
+            document.getElementById('modalContent').innerHTML = `
+                <h2>${story.title}</h2>
+                <div class="modal-meta">${story.date}</div>
+                <div>${story.content}</div>
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); text-align: center;">
+                    <button class="social-btn" onclick="closeModal()" style="cursor: pointer; margin: 0 auto;">&larr; Đóng và quay lại trang chủ</button>
+                </div>
+            `;
+
+            const modal = document.getElementById('readerModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Đóng Modal
+        function closeModal() {
+            const modal = document.getElementById('readerModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Đóng khi click ngoài nền đen
+        function closeModalOnBackdrop(e) {
+            if (e.target.id === 'readerModal') {
+                closeModal();
+            }
+        }
+
+        // Đóng bằng phím ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+</html>
