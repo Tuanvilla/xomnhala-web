@@ -1134,11 +1134,11 @@
                             <div class="game-icon">🏃‍♂️</div>
                             <div>
                                 <h3 class="game-title">Datacenter Runner</h3>
-                                <span class="game-tag">8-Bit Retro • Vượt Rào</span>
+                                <span class="game-tag">8-Bit Retro • Vượt Rào &amp; Bất Tử</span>
                             </div>
                         </div>
                         <p class="game-desc">
-                            Hóa thân thành kỹ sư trực ca nhảy né cuộn cáp quang và vượt qua các tủ rack server phòng máy Nam Thăng Long. Càng chạy càng nhanh!
+                            Hóa thân thành kỹ sư trực ca vượt tủ rack, cuộn cáp, biển cảnh báo và bình cứu hỏa FM-200. Thu thập túi tiền tăng điểm và kích hoạt túi hoàng kim để bất tử 10s!
                         </p>
                         <button class="btn-play-game" onclick="launchGame('runner')">
                             <span>Chơi Ngay &rarr;</span>
@@ -1210,15 +1210,18 @@
 
                     <!-- Arena Game 2: Datacenter Runner -->
                     <div id="stageRunner" class="runner-stage" style="display: none;">
-                        <div style="display: flex; justify-content: space-between; width: 100%; max-width: 600px; font-weight: 700; font-size: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 600px; font-weight: 700; font-size: 15px;">
                             <div>Điểm: <span id="runnerScore" style="color: var(--primary-cyan);">0</span></div>
+                            <div id="runnerPowerupBadge" style="display: none; color: #fbbf24; background: rgba(245, 158, 11, 0.25); padding: 3px 10px; border-radius: 12px; border: 1px solid #f59e0b; font-size: 13px; font-weight: 700;">⭐ BẤT TỬ: <span id="runnerPowerupTimer">10.0</span>s</div>
                             <div>Kỷ lục: <span id="runnerHighScore" style="color: #f59e0b;">0</span></div>
                         </div>
 
                         <canvas id="runnerCanvas" width="600" height="200"></canvas>
 
-                        <div style="font-size: 13.5px; color: var(--text-muted); text-align: center;">
-                            Nhấn <strong>Phím Cách (Space)</strong>, <strong>Mũi tên lên</strong> hoặc <strong>Chạm màn hình</strong> để nhảy né tủ rack server!
+                        <div style="font-size: 13.5px; color: var(--text-muted); text-align: center; line-height: 1.6;">
+                            Nhấn <strong>Phím Cách (Space)</strong>, <strong>Mũi tên lên</strong> hoặc <strong>Chạm màn hình</strong> để nhảy né!<br>
+                            <span style="font-size: 12.5px; color: #10b981;">💰 Ăn túi tiền: <strong>+50 điểm</strong></span> | 
+                            <span style="font-size: 12.5px; color: #fbbf24;">👑 Túi hoàng kim: <strong>Bất tử 10s</strong> đâm nát mọi vật cản (+20đ)!</span>
                         </div>
                         <button class="btn-download-primary" onclick="restartRunner()" style="margin-top: 6px;">Chơi Lại</button>
                     </div>
@@ -1443,6 +1446,9 @@
 
         function closeGameArena() {
             if (runnerAnimationId) cancelAnimationFrame(runnerAnimationId);
+            runnerActive = false;
+            const badge = document.getElementById('runnerPowerupBadge');
+            if (badge) badge.style.display = 'none';
             if (snakeInterval) clearInterval(snakeInterval);
             document.getElementById('gamesCatalog').style.display = 'grid';
             document.getElementById('gameArena').style.display = 'none';
@@ -1610,11 +1616,17 @@
         let runnerScore = 0;
         let runnerHighScore = localStorage.getItem('xnl_runner_hi') || 0;
         let runnerActive = false;
+        let runnerListenersAttached = false;
 
         const runnerEngineer = { x: 50, y: 140, w: 24, h: 36, vy: 0, jump: -9.5, grounded: true };
         let obstacles = [];
+        let runnerItems = [];
+        let runnerParticles = [];
+        let runnerFloatingTexts = [];
         let runnerSpeed = 4.5;
         let spawnTimer = 0;
+        let itemSpawnTimer = 0;
+        let invincibleUntil = 0; // Timestamp ms
 
         function initRunner() {
             runnerCanvas = document.getElementById('runnerCanvas');
@@ -1622,9 +1634,12 @@
             document.getElementById('runnerHighScore').textContent = runnerHighScore;
             restartRunner();
 
-            window.addEventListener('keydown', handleRunnerKey);
-            runnerCanvas.addEventListener('touchstart', handleRunnerTouch);
-            runnerCanvas.addEventListener('mousedown', handleRunnerTouch);
+            if (!runnerListenersAttached) {
+                window.addEventListener('keydown', handleRunnerKey);
+                runnerCanvas.addEventListener('touchstart', handleRunnerTouch, { passive: false });
+                runnerCanvas.addEventListener('mousedown', handleRunnerTouch);
+                runnerListenersAttached = true;
+            }
         }
 
         function handleRunnerKey(e) {
@@ -1656,10 +1671,18 @@
             runnerScore = 0;
             runnerSpeed = 4.5;
             obstacles = [];
+            runnerItems = [];
+            runnerParticles = [];
+            runnerFloatingTexts = [];
+            invincibleUntil = 0;
+            spawnTimer = 0;
+            itemSpawnTimer = 0;
             runnerEngineer.y = 140;
             runnerEngineer.vy = 0;
             runnerEngineer.grounded = true;
             runnerActive = true;
+            const badge = document.getElementById('runnerPowerupBadge');
+            if (badge) badge.style.display = 'none';
             if (runnerAnimationId) cancelAnimationFrame(runnerAnimationId);
             loopRunner();
         }
@@ -1668,8 +1691,23 @@
             if (!runnerActive) return;
             runnerCtx.clearRect(0, 0, runnerCanvas.width, runnerCanvas.height);
 
-            // Ground line
-            runnerCtx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+            const isInvincible = Date.now() < invincibleUntil;
+            const timeLeftSec = isInvincible ? ((invincibleUntil - Date.now()) / 1000).toFixed(1) : 0;
+
+            // Cập nhật Badge Bất Tử trên UI
+            const badge = document.getElementById('runnerPowerupBadge');
+            const badgeTimer = document.getElementById('runnerPowerupTimer');
+            if (badge && badgeTimer) {
+                if (isInvincible) {
+                    badge.style.display = 'block';
+                    badgeTimer.textContent = timeLeftSec;
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+
+            // Ground line (Mặt sàn IDC)
+            runnerCtx.strokeStyle = isInvincible ? 'rgba(251, 191, 36, 0.6)' : 'rgba(6, 182, 212, 0.4)';
             runnerCtx.lineWidth = 2;
             runnerCtx.beginPath();
             runnerCtx.moveTo(0, 176);
@@ -1685,25 +1723,159 @@
                 runnerEngineer.grounded = true;
             }
 
-            // Draw Engineer (Kỹ sư áo xanh mũ vàng)
-            runnerCtx.fillStyle = '#f59e0b'; // Mũ bảo hộ
+            // Hào quang bảo vệ nếu đang BẤT TỬ
+            if (isInvincible) {
+                runnerCtx.save();
+                runnerCtx.shadowColor = '#fbbf24';
+                runnerCtx.shadowBlur = 18;
+                runnerCtx.strokeStyle = (Date.now() % 240 < 120) ? '#fbbf24' : '#38bdf8';
+                runnerCtx.lineWidth = 3;
+                runnerCtx.beginPath();
+                runnerCtx.arc(runnerEngineer.x + 12, runnerEngineer.y + 18, 25, 0, Math.PI * 2);
+                runnerCtx.stroke();
+                runnerCtx.restore();
+            }
+
+            // Vẽ Kỹ sư trực ca
+            runnerCtx.fillStyle = isInvincible ? '#fbbf24' : '#f59e0b'; // Mũ bảo hộ vàng kim
             runnerCtx.fillRect(runnerEngineer.x + 4, runnerEngineer.y, 16, 8);
             runnerCtx.fillStyle = '#fed7aa'; // Mặt
             runnerCtx.fillRect(runnerEngineer.x + 6, runnerEngineer.y + 8, 12, 8);
-            runnerCtx.fillStyle = '#0284c7'; // Áo bảo hộ VNPT
+            runnerCtx.fillStyle = isInvincible ? '#8b5cf6' : '#0284c7'; // Áo bảo hộ VNPT (hóa tím siêu cấp khi bất tử)
             runnerCtx.fillRect(runnerEngineer.x + 2, runnerEngineer.y + 16, 20, 14);
             runnerCtx.fillStyle = '#1e293b'; // Quần
             runnerCtx.fillRect(runnerEngineer.x + 4, runnerEngineer.y + 30, 16, 8);
 
-            // Obstacles logic (Tủ rack server & Cuộn cáp mạng)
-            spawnTimer++;
-            if (spawnTimer > 75 + Math.random() * 50) {
-                spawnTimer = 0;
-                const type = Math.random() > 0.4 ? 'rack' : 'cable';
-                if (type === 'rack') {
-                    obstacles.push({ x: runnerCanvas.width, y: 132, w: 20, h: 44, type: 'rack' });
+            // Sinh Túi Tiền (Thường & Hoàng Kim)
+            itemSpawnTimer++;
+            if (itemSpawnTimer > 95 + Math.random() * 65) {
+                itemSpawnTimer = 0;
+                const isSpecial = Math.random() < 0.28; // 28% cơ hội ra túi đặc biệt hoàng kim
+                const inAir = Math.random() < 0.45;     // 45% bay trên không cần nhảy để ăn
+                runnerItems.push({
+                    x: runnerCanvas.width,
+                    y: inAir ? 106 : 144,
+                    w: 24,
+                    h: 24,
+                    type: isSpecial ? 'special' : 'normal',
+                    floatOffset: Math.random() * Math.PI * 2
+                });
+            }
+
+            // Xử lý di chuyển và vẽ Túi Tiền
+            for (let i = runnerItems.length - 1; i >= 0; i--) {
+                const it = runnerItems[i];
+                it.x -= runnerSpeed;
+                const floatY = it.y + Math.sin(Date.now() / 160 + it.floatOffset) * 3;
+
+                runnerCtx.save();
+                if (it.type === 'special') {
+                    // Túi tiền Hoàng Kim Bất Tử 10s
+                    runnerCtx.shadowColor = '#fbbf24';
+                    runnerCtx.shadowBlur = 14;
+                    runnerCtx.fillStyle = '#fbbf24';
+                    runnerCtx.beginPath();
+                    runnerCtx.arc(it.x + 12, floatY + 14, 10, 0, Math.PI * 2);
+                    runnerCtx.fill();
+                    runnerCtx.fillStyle = '#d97706';
+                    runnerCtx.fillRect(it.x + 8, floatY + 2, 8, 5);
+                    runnerCtx.fillStyle = '#ffffff';
+                    runnerCtx.font = 'bold 12px sans-serif';
+                    runnerCtx.textAlign = 'center';
+                    runnerCtx.fillText('★', it.x + 12, floatY + 18);
                 } else {
+                    // Túi tiền Thường (+50 Điểm)
+                    runnerCtx.shadowColor = '#10b981';
+                    runnerCtx.shadowBlur = 8;
+                    runnerCtx.fillStyle = '#10b981';
+                    runnerCtx.beginPath();
+                    runnerCtx.arc(it.x + 12, floatY + 14, 9, 0, Math.PI * 2);
+                    runnerCtx.fill();
+                    runnerCtx.fillStyle = '#059669';
+                    runnerCtx.fillRect(it.x + 8, floatY + 3, 8, 4);
+                    runnerCtx.fillStyle = '#ffffff';
+                    runnerCtx.font = 'bold 11px sans-serif';
+                    runnerCtx.textAlign = 'center';
+                    runnerCtx.fillText('$', it.x + 12, floatY + 18);
+                }
+                runnerCtx.restore();
+
+                // Kiểm tra va chạm ăn túi tiền
+                if (
+                    runnerEngineer.x < it.x + it.w &&
+                    runnerEngineer.x + runnerEngineer.w > it.x &&
+                    runnerEngineer.y < floatY + it.h &&
+                    runnerEngineer.y + runnerEngineer.h > floatY
+                ) {
+                    if (it.type === 'special') {
+                        // Kích hoạt BẤT TỬ 10s & Cộng điểm
+                        invincibleUntil = Date.now() + 10000;
+                        runnerScore += 500; // Tương đương +50 điểm
+                        runnerFloatingTexts.push({
+                            x: runnerEngineer.x + 20,
+                            y: runnerEngineer.y - 12,
+                            text: '⭐ BẤT TỬ 10s (+50)',
+                            color: '#fbbf24',
+                            life: 55
+                        });
+                        // Bắn chùm hạt vàng rực
+                        for (let p = 0; p < 15; p++) {
+                            runnerParticles.push({
+                                x: it.x + 12,
+                                y: floatY + 12,
+                                vx: (Math.random() - 0.5) * 6,
+                                vy: (Math.random() - 0.5) * 6 - 1,
+                                color: '#fbbf24',
+                                life: 30,
+                                size: 3
+                            });
+                        }
+                    } else {
+                        // Ăn túi thường +50 điểm
+                        runnerScore += 500;
+                        runnerFloatingTexts.push({
+                            x: it.x,
+                            y: floatY - 8,
+                            text: '+50 💰',
+                            color: '#10b981',
+                            life: 40
+                        });
+                        for (let p = 0; p < 8; p++) {
+                            runnerParticles.push({
+                                x: it.x + 12,
+                                y: floatY + 12,
+                                vx: (Math.random() - 0.5) * 4,
+                                vy: (Math.random() - 0.5) * 4,
+                                color: '#10b981',
+                                life: 20,
+                                size: 2.5
+                            });
+                        }
+                    }
+                    runnerItems.splice(i, 1);
+                    continue;
+                }
+
+                if (it.x + it.w < 0) runnerItems.splice(i, 1);
+            }
+
+            // Sinh Chướng Ngại Vật (4 Loại: Rack, Cáp Quang, Biển Cảnh Báo, Bình FM-200)
+            spawnTimer++;
+            if (spawnTimer > 75 + Math.random() * 45) {
+                spawnTimer = 0;
+                const rand = Math.random();
+                if (rand < 0.32) {
+                    // Loại 1: Tủ Rack Server
+                    obstacles.push({ x: runnerCanvas.width, y: 132, w: 20, h: 44, type: 'rack' });
+                } else if (rand < 0.58) {
+                    // Loại 2: Cuộn Cáp Quang
                     obstacles.push({ x: runnerCanvas.width, y: 154, w: 26, h: 22, type: 'cable' });
+                } else if (rand < 0.80) {
+                    // Loại 3: Biển Cảnh Báo An Toàn Sàn IDC
+                    obstacles.push({ x: runnerCanvas.width, y: 148, w: 22, h: 28, type: 'cone' });
+                } else {
+                    // Loại 4: Bình Chữa Cháy Khí FM-200
+                    obstacles.push({ x: runnerCanvas.width, y: 138, w: 22, h: 38, type: 'fm200' });
                 }
             }
 
@@ -1711,60 +1883,166 @@
                 const ob = obstacles[i];
                 ob.x -= runnerSpeed;
 
-                // Draw obstacle
+                // Vẽ từng loại chướng ngại vật
                 if (ob.type === 'rack') {
-                    // Tủ rack server
+                    // 1. Tủ rack server
                     runnerCtx.fillStyle = '#0f172a';
                     runnerCtx.fillRect(ob.x, ob.y, ob.w, ob.h);
                     runnerCtx.strokeStyle = 'rgba(255,255,255,0.2)';
                     runnerCtx.strokeRect(ob.x, ob.y, ob.w, ob.h);
-                    // Server LED
                     runnerCtx.fillStyle = '#10b981';
                     runnerCtx.fillRect(ob.x + 4, ob.y + 8, 3, 3);
+                    runnerCtx.fillStyle = '#06b6d4';
                     runnerCtx.fillRect(ob.x + 4, ob.y + 20, 3, 3);
+                    runnerCtx.fillStyle = '#f59e0b';
                     runnerCtx.fillRect(ob.x + 4, ob.y + 32, 3, 3);
-                } else {
-                    // Cuộn cáp quang
+                } else if (ob.type === 'cable') {
+                    // 2. Cuộn cáp quang
                     runnerCtx.fillStyle = '#d97706';
                     runnerCtx.beginPath();
                     runnerCtx.arc(ob.x + 13, ob.y + 11, 11, 0, Math.PI * 2);
                     runnerCtx.fill();
                     runnerCtx.strokeStyle = '#fde047';
                     runnerCtx.stroke();
+                    runnerCtx.fillStyle = '#78350f';
+                    runnerCtx.beginPath();
+                    runnerCtx.arc(ob.x + 13, ob.y + 11, 4, 0, Math.PI * 2);
+                    runnerCtx.fill();
+                } else if (ob.type === 'cone') {
+                    // 3. Biển tam giác cảnh báo an toàn sàn IDC
+                    runnerCtx.fillStyle = '#facc15';
+                    runnerCtx.beginPath();
+                    runnerCtx.moveTo(ob.x + 11, ob.y);
+                    runnerCtx.lineTo(ob.x + 22, ob.y + 28);
+                    runnerCtx.lineTo(ob.x, ob.y + 28);
+                    runnerCtx.closePath();
+                    runnerCtx.fill();
+                    runnerCtx.fillStyle = '#1e293b';
+                    runnerCtx.fillRect(ob.x + 6, ob.y + 13, 10, 4);
+                    runnerCtx.fillStyle = '#dc2626';
+                    runnerCtx.font = 'bold 11px sans-serif';
+                    runnerCtx.textAlign = 'center';
+                    runnerCtx.fillText('!', ob.x + 11, ob.y + 26);
+                } else if (ob.type === 'fm200') {
+                    // 4. Bình chữa cháy khí sạch FM-200
+                    runnerCtx.fillStyle = '#dc2626';
+                    runnerCtx.fillRect(ob.x, ob.y + 8, ob.w, 30);
+                    runnerCtx.fillStyle = '#f59e0b';
+                    runnerCtx.fillRect(ob.x + 7, ob.y + 2, 8, 6);
+                    runnerCtx.fillStyle = '#ffffff';
+                    runnerCtx.beginPath();
+                    runnerCtx.arc(ob.x + 11, ob.y + 16, 4, 0, Math.PI * 2);
+                    runnerCtx.fill();
+                    runnerCtx.fillStyle = '#10b981';
+                    runnerCtx.fillRect(ob.x + 10, ob.y + 14, 2, 3);
+                    runnerCtx.fillStyle = '#ffffff';
+                    runnerCtx.font = 'bold 8px sans-serif';
+                    runnerCtx.textAlign = 'center';
+                    runnerCtx.fillText('FM', ob.x + 11, ob.y + 30);
                 }
 
-                // Collision detection
+                // Kiểm tra va chạm
                 if (
                     runnerEngineer.x < ob.x + ob.w &&
                     runnerEngineer.x + runnerEngineer.w > ob.x &&
                     runnerEngineer.y < ob.y + ob.h &&
                     runnerEngineer.y + runnerEngineer.h > ob.y
                 ) {
-                    // Game Over
-                    runnerActive = false;
-                    runnerCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    runnerCtx.fillRect(0, 0, runnerCanvas.width, runnerCanvas.height);
-                    runnerCtx.fillStyle = '#ef4444';
-                    runnerCtx.font = 'bold 22px sans-serif';
-                    runnerCtx.textAlign = 'center';
-                    runnerCtx.fillText('SỰ CỐ VẬN HÀNH (GAME OVER)!', runnerCanvas.width / 2, 90);
-                    runnerCtx.fillStyle = '#ffffff';
-                    runnerCtx.font = '14px sans-serif';
-                    runnerCtx.fillText('Chạm màn hình hoặc bấm Chơi Lại', runnerCanvas.width / 2, 120);
+                    if (isInvincible) {
+                        // ĐANG BẤT TỬ: Đâm nát vật cản, thưởng điểm và hiệu ứng nổ!
+                        runnerScore += 200; // Thưởng thêm +20 điểm
+                        runnerFloatingTexts.push({
+                            x: ob.x,
+                            y: ob.y - 10,
+                            text: '💥 PHÁ HỦY (+20)',
+                            color: '#fbbf24',
+                            life: 45
+                        });
+                        for (let p = 0; p < 12; p++) {
+                            runnerParticles.push({
+                                x: ob.x + ob.w / 2,
+                                y: ob.y + ob.h / 2,
+                                vx: (Math.random() - 0.5) * 8,
+                                vy: (Math.random() - 0.5) * 8 - 2,
+                                color: (ob.type === 'fm200') ? '#ef4444' : ((ob.type === 'cone') ? '#facc15' : '#06b6d4'),
+                                life: 25,
+                                size: 3
+                            });
+                        }
+                        obstacles.splice(i, 1);
+                        continue;
+                    } else {
+                        // SỰ CỐ VẬN HÀNH (GAME OVER)
+                        runnerActive = false;
+                        runnerCtx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                        runnerCtx.fillRect(0, 0, runnerCanvas.width, runnerCanvas.height);
+                        runnerCtx.fillStyle = '#ef4444';
+                        runnerCtx.font = 'bold 22px sans-serif';
+                        runnerCtx.textAlign = 'center';
+                        runnerCtx.fillText('SỰ CỐ VẬN HÀNH (GAME OVER)!', runnerCanvas.width / 2, 85);
+                        runnerCtx.fillStyle = '#ffffff';
+                        runnerCtx.font = '14px sans-serif';
+                        runnerCtx.fillText('Chạm màn hình hoặc bấm Chơi Lại', runnerCanvas.width / 2, 115);
 
-                    if (runnerScore > runnerHighScore) {
-                        runnerHighScore = runnerScore;
-                        localStorage.setItem('xnl_runner_hi', runnerHighScore);
-                        document.getElementById('runnerHighScore').textContent = runnerHighScore;
+                        const finalScore = Math.floor(runnerScore / 10);
+                        if (finalScore > runnerHighScore) {
+                            runnerHighScore = finalScore;
+                            localStorage.setItem('xnl_runner_hi', runnerHighScore);
+                            document.getElementById('runnerHighScore').textContent = runnerHighScore;
+                        }
+                        return;
                     }
-                    return;
                 }
 
                 if (ob.x + ob.w < 0) obstacles.splice(i, 1);
             }
 
+            // Vẽ hiệu ứng hạt nổ / lấp lánh
+            for (let p = runnerParticles.length - 1; p >= 0; p--) {
+                const pt = runnerParticles[p];
+                pt.x += pt.vx;
+                pt.y += pt.vy;
+                pt.life--;
+                runnerCtx.fillStyle = pt.color;
+                runnerCtx.beginPath();
+                runnerCtx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+                runnerCtx.fill();
+                if (pt.life <= 0) runnerParticles.splice(p, 1);
+            }
+
+            // Vẽ chữ nổi bay lên
+            for (let f = runnerFloatingTexts.length - 1; f >= 0; f--) {
+                const ft = runnerFloatingTexts[f];
+                ft.y -= 1.1;
+                ft.life--;
+                runnerCtx.save();
+                runnerCtx.fillStyle = ft.color;
+                runnerCtx.font = 'bold 13px sans-serif';
+                runnerCtx.textAlign = 'center';
+                runnerCtx.shadowColor = '#000000';
+                runnerCtx.shadowBlur = 4;
+                runnerCtx.fillText(ft.text, ft.x, ft.y);
+                runnerCtx.restore();
+                if (ft.life <= 0) runnerFloatingTexts.splice(f, 1);
+            }
+
+            // HUD vẽ trực tiếp thời gian Bất Tử lên Canvas
+            if (isInvincible) {
+                runnerCtx.save();
+                runnerCtx.fillStyle = 'rgba(245, 158, 11, 0.25)';
+                runnerCtx.strokeStyle = '#fbbf24';
+                runnerCtx.lineWidth = 1;
+                runnerCtx.fillRect(10, 10, 140, 24);
+                runnerCtx.strokeRect(10, 10, 140, 24);
+                runnerCtx.fillStyle = '#fbbf24';
+                runnerCtx.font = 'bold 12px sans-serif';
+                runnerCtx.textAlign = 'left';
+                runnerCtx.fillText('★ BẤT TỬ: ' + timeLeftSec + 's', 18, 26);
+                runnerCtx.restore();
+            }
+
             runnerScore++;
-            if (runnerScore % 250 === 0) runnerSpeed += 0.3; // Tăng dần tốc độ
+            if (runnerScore % 250 === 0) runnerSpeed += 0.25; // Tăng dần tốc độ
             document.getElementById('runnerScore').textContent = Math.floor(runnerScore / 10);
 
             runnerAnimationId = requestAnimationFrame(loopRunner);
