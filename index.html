@@ -1105,7 +1105,7 @@
                         <span>🎮</span> Góc Giải Trí • Xóm Nhà Lá Arcade
                     </h1>
                     <p class="feed-subtitle">
-                        4 Mini Game giải trí xả stress, chơi trực tiếp trên trình duyệt 0đ cực nuột!
+                        5 Mini Game giải trí xả stress, chơi trực tiếp trên trình duyệt 0đ cực nuột!
                     </p>
                 </header>
 
@@ -1175,6 +1175,23 @@
                             Điều khiển sợi dây cáp quang phát sáng neon săn các gói dữ liệu data packet trong phòng máy. Game tuổi thơ không bao giờ chán.
                         </p>
                         <button class="btn-play-game" onclick="launchGame('snake')">
+                            <span>Chơi Ngay &rarr;</span>
+                        </button>
+                    </div>
+
+                    <!-- Game 5: Cờ Tướng Đấu Trí -->
+                    <div class="game-card">
+                        <div class="game-card-head">
+                            <div class="game-icon">⚔️</div>
+                            <div>
+                                <h3 class="game-title">Cờ Tướng Đấu Trí</h3>
+                                <span class="game-tag">Kinh Điển • Đấu AI &amp; 2 Người</span>
+                            </div>
+                        </div>
+                        <p class="game-desc">
+                            Bàn cờ tướng 10x9 chuẩn luật với sông Sở Hà - Hán Giới và Cửu Cung. Đấu trí cùng máy AI thông minh hoặc tự luyện cờ giải trí!
+                        </p>
+                        <button class="btn-play-game" onclick="launchGame('cotuong')">
                             <span>Chơi Ngay &rarr;</span>
                         </button>
                     </div>
@@ -1262,6 +1279,22 @@
                             <button class="dpad-btn" onclick="changeSnakeDir('LEFT')">&larr;</button>
                             <button class="dpad-btn" onclick="changeSnakeDir('DOWN')">&darr;</button>
                             <button class="dpad-btn" onclick="changeSnakeDir('RIGHT')">&rarr;</button>
+                        </div>
+                    </div>
+
+                    <!-- Arena Game 5: Cờ Tướng -->
+                    <div id="stageCoTuong" class="cotuong-stage" style="display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 410px; font-weight: 700; font-size: 14px;">
+                            <div id="cotuongTurnText" style="color: #ef4444;">Lượt đi: Quân Đỏ (Bạn)</div>
+                            <div id="cotuongStatusText" style="color: var(--accent-green);">Chọn quân để đi</div>
+                        </div>
+
+                        <canvas id="cotuongCanvas" width="396" height="440" style="background: #231811; border: 2px solid #854d0e; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); cursor: pointer; max-width: 100%; height: auto; touch-action: manipulation;"></canvas>
+
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 410px;">
+                            <button class="btn-download-primary" onclick="initCoTuong()" style="padding: 7px 16px; font-size: 13.5px;">Ván Mới</button>
+                            <button class="btn-back-games" id="btnCoTuongMode" onclick="toggleCoTuongMode()" style="padding: 7px 16px; font-size: 13.5px;">Chế độ: Đấu với AI</button>
+                            <button class="btn-back-games" onclick="undoCoTuong()" style="padding: 7px 16px; font-size: 13.5px;">Đi lại (Undo)</button>
                         </div>
                     </div>
                 </div>
@@ -1422,8 +1455,11 @@
             const arena = document.getElementById('gameArena');
             arena.style.display = 'flex';
 
-            const stages = ['Poker', 'Runner', '2048', 'Snake'];
-            stages.forEach(s => document.getElementById('stage' + s).style.display = 'none');
+            const stages = ['Poker', 'Runner', '2048', 'Snake', 'CoTuong'];
+            stages.forEach(s => {
+                const el = document.getElementById('stage' + s);
+                if (el) el.style.display = 'none';
+            });
 
             if (game === 'poker') {
                 document.getElementById('arenaTitle').innerHTML = '<span>🃏</span> Lucky Luke Video Poker';
@@ -1441,6 +1477,10 @@
                 document.getElementById('arenaTitle').innerHTML = '<span>🐍</span> Rắn Săn Mồi Cáp Quang';
                 document.getElementById('stageSnake').style.display = 'flex';
                 initSnake();
+            } else if (game === 'cotuong') {
+                document.getElementById('arenaTitle').innerHTML = '<span>⚔️</span> Cờ Tướng Đấu Trí';
+                document.getElementById('stageCoTuong').style.display = 'flex';
+                initCoTuong();
             }
         }
 
@@ -1746,17 +1786,19 @@
             runnerCtx.fillStyle = '#1e293b'; // Quần
             runnerCtx.fillRect(runnerEngineer.x + 4, runnerEngineer.y + 30, 16, 8);
 
-            // Sinh Túi Tiền (Thường & Hoàng Kim)
+            // Sinh Túi Tiền (Thường & Hoàng Kim TO HƠN)
             itemSpawnTimer++;
             if (itemSpawnTimer > 95 + Math.random() * 65) {
                 itemSpawnTimer = 0;
-                const isSpecial = Math.random() < 0.28; // 28% cơ hội ra túi đặc biệt hoàng kim
+                const isSpecial = Math.random() < 0.30; // 30% cơ hội ra túi đặc biệt hoàng kim
                 const inAir = Math.random() < 0.45;     // 45% bay trên không cần nhảy để ăn
+                const itW = isSpecial ? 36 : 24;        // Túi đặc biệt to hơn (36px so với 24px)
+                const itH = isSpecial ? 36 : 24;
                 runnerItems.push({
                     x: runnerCanvas.width,
-                    y: inAir ? 106 : 144,
-                    w: 24,
-                    h: 24,
+                    y: inAir ? (isSpecial ? 98 : 106) : (isSpecial ? 134 : 144),
+                    w: itW,
+                    h: itH,
                     type: isSpecial ? 'special' : 'normal',
                     floatOffset: Math.random() * Math.PI * 2
                 });
@@ -1770,19 +1812,25 @@
 
                 runnerCtx.save();
                 if (it.type === 'special') {
-                    // Túi tiền Hoàng Kim Bất Tử 10s
+                    // Túi tiền Hoàng Kim Bất Tử 10s (TO HƠN & RỰC RỠ HƠN)
                     runnerCtx.shadowColor = '#fbbf24';
-                    runnerCtx.shadowBlur = 14;
+                    runnerCtx.shadowBlur = 20;
                     runnerCtx.fillStyle = '#fbbf24';
+                    // Túi bầu tròn to hơn hẳn (bán kính 15px)
                     runnerCtx.beginPath();
-                    runnerCtx.arc(it.x + 12, floatY + 14, 10, 0, Math.PI * 2);
+                    runnerCtx.arc(it.x + 18, floatY + 20, 15, 0, Math.PI * 2);
                     runnerCtx.fill();
+                    // Miệng túi thắt nơ vàng đậm
                     runnerCtx.fillStyle = '#d97706';
-                    runnerCtx.fillRect(it.x + 8, floatY + 2, 8, 5);
+                    runnerCtx.fillRect(it.x + 11, floatY + 2, 14, 6);
+                    // Dải nơ đỏ nổi bật
+                    runnerCtx.fillStyle = '#ef4444';
+                    runnerCtx.fillRect(it.x + 9, floatY + 7, 18, 3);
+                    // Ngôi sao vàng kim ★ to rõ
                     runnerCtx.fillStyle = '#ffffff';
-                    runnerCtx.font = 'bold 12px sans-serif';
+                    runnerCtx.font = 'bold 16px sans-serif';
                     runnerCtx.textAlign = 'center';
-                    runnerCtx.fillText('★', it.x + 12, floatY + 18);
+                    runnerCtx.fillText('★', it.x + 18, floatY + 26);
                 } else {
                     // Túi tiền Thường (+50 Điểm)
                     runnerCtx.shadowColor = '#10b981';
@@ -2260,6 +2308,599 @@
             });
             snakeCtx.shadowBlur = 0;
         }
+    
+        // ==========================================
+        // GAME 5: CỜ TƯỚNG ĐẤU TRÍ (XIANGQI AI)
+        // ==========================================
+        let ctCanvas, ctCtx;
+        let ctBoard = [];
+        let ctSelected = null;
+        let ctValidMoves = [];
+        let ctTurn = 'red'; // 'red' (Người chơi) hoặc 'black' (Máy AI / Người 2)
+        let ctAiMode = true; // true: Đấu AI, false: 2 Người
+        let ctHistory = [];
+        let ctLastMove = null;
+        let ctGameOver = false;
+
+        const CT_PAD_X = 26;
+        const CT_PAD_Y = 26;
+        const CT_CELL_W = (396 - 52) / 8; // 43px
+        const CT_CELL_H = (440 - 52) / 9; // 43.1px
+
+        const ctPieceNames = {
+            'K': 'TƯỚNG',
+            'A': 'SĨ',
+            'E': 'TƯỢNG',
+            'R': 'XE',
+            'C': 'PHÁO',
+            'H': 'MÃ',
+            'P': 'TỐT'
+        };
+
+        const ctPieceValues = {
+            'K': 10000,
+            'R': 95,
+            'C': 48,
+            'H': 42,
+            'E': 22,
+            'A': 22,
+            'P': 15
+        };
+
+        function initCoTuong() {
+            ctCanvas = document.getElementById('cotuongCanvas');
+            ctCtx = ctCanvas.getContext('2d');
+            ctGameOver = false;
+            ctTurn = 'red';
+            ctSelected = null;
+            ctValidMoves = [];
+            ctHistory = [];
+            ctLastMove = null;
+
+            setupCoTuongBoard();
+            updateCoTuongUI();
+            drawCoTuongBoard();
+
+            ctCanvas.onmousedown = handleCoTuongClick;
+            ctCanvas.ontouchstart = handleCoTuongTouch;
+        }
+
+        function toggleCoTuongMode() {
+            ctAiMode = !ctAiMode;
+            document.getElementById('btnCoTuongMode').textContent = ctAiMode ? 'Chế độ: Đấu với AI' : 'Chế độ: 2 Người chơi';
+            initCoTuong();
+        }
+
+        function setupCoTuongBoard() {
+            ctBoard = Array(10).fill(null).map(() => Array(9).fill(null));
+
+            // Quân Đen (Máy AI - Hàng 0-3)
+            ctBoard[0][0] = { type: 'R', color: 'black' };
+            ctBoard[0][1] = { type: 'H', color: 'black' };
+            ctBoard[0][2] = { type: 'E', color: 'black' };
+            ctBoard[0][3] = { type: 'A', color: 'black' };
+            ctBoard[0][4] = { type: 'K', color: 'black' };
+            ctBoard[0][5] = { type: 'A', color: 'black' };
+            ctBoard[0][6] = { type: 'E', color: 'black' };
+            ctBoard[0][7] = { type: 'H', color: 'black' };
+            ctBoard[0][8] = { type: 'R', color: 'black' };
+            ctBoard[2][1] = { type: 'C', color: 'black' };
+            ctBoard[2][7] = { type: 'C', color: 'black' };
+            ctBoard[3][0] = { type: 'P', color: 'black' };
+            ctBoard[3][2] = { type: 'P', color: 'black' };
+            ctBoard[3][4] = { type: 'P', color: 'black' };
+            ctBoard[3][6] = { type: 'P', color: 'black' };
+            ctBoard[3][8] = { type: 'P', color: 'black' };
+
+            // Quân Đỏ (Người chơi - Hàng 6-9)
+            ctBoard[9][0] = { type: 'R', color: 'red' };
+            ctBoard[9][1] = { type: 'H', color: 'red' };
+            ctBoard[9][2] = { type: 'E', color: 'red' };
+            ctBoard[9][3] = { type: 'A', color: 'red' };
+            ctBoard[9][4] = { type: 'K', color: 'red' };
+            ctBoard[9][5] = { type: 'A', color: 'red' };
+            ctBoard[9][6] = { type: 'E', color: 'red' };
+            ctBoard[9][7] = { type: 'H', color: 'red' };
+            ctBoard[9][8] = { type: 'R', color: 'red' };
+            ctBoard[7][1] = { type: 'C', color: 'red' };
+            ctBoard[7][7] = { type: 'C', color: 'red' };
+            ctBoard[6][0] = { type: 'P', color: 'red' };
+            ctBoard[6][2] = { type: 'P', color: 'red' };
+            ctBoard[6][4] = { type: 'P', color: 'red' };
+            ctBoard[6][6] = { type: 'P', color: 'red' };
+            ctBoard[6][8] = { type: 'P', color: 'red' };
+        }
+
+        function updateCoTuongUI(statusMsg) {
+            const turnText = document.getElementById('cotuongTurnText');
+            const statusText = document.getElementById('cotuongStatusText');
+            if (ctTurn === 'red') {
+                turnText.textContent = 'Lượt đi: Quân Đỏ (Bạn)';
+                turnText.style.color = '#ef4444';
+            } else {
+                turnText.textContent = ctAiMode ? 'Lượt đi: Quân Đen (AI đang nghĩ...)' : 'Lượt đi: Quân Đen';
+                turnText.style.color = '#94a3b8';
+            }
+            if (statusMsg) statusText.textContent = statusMsg;
+            else statusText.textContent = ctGameOver ? 'Ván cờ kết thúc' : 'Chọn quân để đi';
+        }
+
+        function handleCoTuongTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = ctCanvas.getBoundingClientRect();
+            const scaleX = ctCanvas.width / rect.width;
+            const scaleY = ctCanvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            processCoTuongInput(x, y);
+        }
+
+        function handleCoTuongClick(e) {
+            const rect = ctCanvas.getBoundingClientRect();
+            const scaleX = ctCanvas.width / rect.width;
+            const scaleY = ctCanvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            processCoTuongInput(x, y);
+        }
+
+        function processCoTuongInput(x, y) {
+            if (ctGameOver) return;
+            if (ctAiMode && ctTurn === 'black') return; // Đang đợi AI
+
+            // Tìm giao điểm gần nhất
+            const col = Math.round((x - CT_PAD_X) / CT_CELL_W);
+            const row = Math.round((y - CT_PAD_Y) / CT_CELL_H);
+            if (col < 0 || col > 8 || row < 0 || row > 9) return;
+
+            const clickedPiece = ctBoard[row][col];
+
+            // Nếu click vào một nước đi hợp lệ của quân đang chọn
+            if (ctSelected) {
+                const move = ctValidMoves.find(m => m.toC === col && m.toR === row);
+                if (move) {
+                    executeCoTuongMove(move);
+                    return;
+                }
+            }
+
+            // Chọn quân cờ của phe hiện tại
+            if (clickedPiece && clickedPiece.color === ctTurn) {
+                ctSelected = { col, row };
+                ctValidMoves = getCtValidMoves(col, row, ctBoard);
+                drawCoTuongBoard();
+            } else {
+                ctSelected = null;
+                ctValidMoves = [];
+                drawCoTuongBoard();
+            }
+        }
+
+        function executeCoTuongMove(move) {
+            // Lưu lịch sử để Undo
+            const boardClone = ctBoard.map(r => r.map(c => (c ? { ...c } : null)));
+            ctHistory.push({
+                board: boardClone,
+                turn: ctTurn,
+                lastMove: ctLastMove
+            });
+
+            const p = ctBoard[move.fromR][move.fromC];
+            const captured = ctBoard[move.toR][move.toC];
+            ctBoard[move.toR][move.toC] = p;
+            ctBoard[move.fromR][move.fromC] = null;
+            ctLastMove = move;
+            ctSelected = null;
+            ctValidMoves = [];
+
+            // Kiểm tra bắt Tướng
+            if (captured && captured.type === 'K') {
+                ctGameOver = true;
+                drawCoTuongBoard();
+                const winMsg = (captured.color === 'black') ? '🏆 BẠN ĐÃ CHIẾN THẮNG!' : '💀 QUÂN ĐEN CHIẾN THẮNG!';
+                updateCoTuongUI(winMsg);
+                return;
+            }
+
+            // Đổi lượt
+            ctTurn = (ctTurn === 'red') ? 'black' : 'red';
+            updateCoTuongUI();
+            drawCoTuongBoard();
+
+            // Nếu đến lượt AI
+            if (!ctGameOver && ctAiMode && ctTurn === 'black') {
+                setTimeout(makeCoTuongAiMove, 350);
+            }
+        }
+
+        function undoCoTuong() {
+            if (ctHistory.length === 0) return;
+            const steps = (ctAiMode && ctHistory.length >= 2) ? 2 : 1;
+            for (let i = 0; i < steps; i++) {
+                if (ctHistory.length > 0) {
+                    const prev = ctHistory.pop();
+                    ctBoard = prev.board;
+                    ctTurn = prev.turn;
+                    ctLastMove = prev.lastMove;
+                }
+            }
+            ctSelected = null;
+            ctValidMoves = [];
+            ctGameOver = false;
+            updateCoTuongUI('Đã đi lại nước cờ');
+            drawCoTuongBoard();
+        }
+
+        function getCtValidMoves(col, row, board) {
+            const p = board[row][col];
+            if (!p) return [];
+            const moves = [];
+            const color = p.color;
+
+            function addMove(tc, tr) {
+                if (tc < 0 || tc > 8 || tr < 0 || tr > 9) return;
+                const dest = board[tr][tc];
+                if (!dest) {
+                    moves.push({ fromC: col, fromR: row, toC: tc, toR: tr });
+                } else if (dest.color !== color) {
+                    moves.push({ fromC: col, fromR: row, toC: tc, toR: tr, capture: dest.type });
+                }
+            }
+
+            if (p.type === 'K') {
+                // Di chuyển 4 hướng trong Cửu cung
+                const deltas = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+                for (const [dc, dr] of deltas) {
+                    const tc = col + dc;
+                    const tr = row + dr;
+                    if (tc >= 3 && tc <= 5) {
+                        if (color === 'red' && tr >= 7 && tr <= 9) addMove(tc, tr);
+                        if (color === 'black' && tr >= 0 && tr <= 2) addMove(tc, tr);
+                    }
+                }
+                // Lộ mặt tướng
+                const dir = (color === 'red') ? -1 : 1;
+                let r = row + dir;
+                while (r >= 0 && r <= 9) {
+                    const dest = board[r][col];
+                    if (dest) {
+                        if (dest.type === 'K' && dest.color !== color) {
+                            moves.push({ fromC: col, fromR: row, toC: col, toR: r, capture: 'K' });
+                        }
+                        break;
+                    }
+                    r += dir;
+                }
+            } else if (p.type === 'A') {
+                // Sĩ đi chéo 1 ô trong Cửu cung
+                const deltas = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+                for (const [dc, dr] of deltas) {
+                    const tc = col + dc;
+                    const tr = row + dr;
+                    if (tc >= 3 && tc <= 5) {
+                        if (color === 'red' && tr >= 7 && tr <= 9) addMove(tc, tr);
+                        if (color === 'black' && tr >= 0 && tr <= 2) addMove(tc, tr);
+                    }
+                }
+            } else if (p.type === 'E') {
+                // Tượng đi chéo 2 ô, không qua sông, cản mắt tượng
+                const deltas = [
+                    { dc: -2, dr: -2, ec: -1, er: -1 },
+                    { dc: 2, dr: -2, ec: 1, er: -1 },
+                    { dc: -2, dr: 2, ec: -1, er: 1 },
+                    { dc: 2, dr: 2, ec: 1, er: 1 }
+                ];
+                for (const d of deltas) {
+                    const tc = col + d.dc;
+                    const tr = row + d.dr;
+                    if (tc >= 0 && tc <= 8 && tr >= 0 && tr <= 9) {
+                        if (color === 'red' && tr < 5) continue;
+                        if (color === 'black' && tr > 4) continue;
+                        if (!board[row + d.er][col + d.ec]) addMove(tc, tr);
+                    }
+                }
+            } else if (p.type === 'R') {
+                // Xe đi thẳng ngang dọc
+                const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+                for (const [dc, dr] of dirs) {
+                    let tc = col + dc;
+                    let tr = row + dr;
+                    while (tc >= 0 && tc <= 8 && tr >= 0 && tr <= 9) {
+                        const dest = board[tr][tc];
+                        if (!dest) {
+                            moves.push({ fromC: col, fromR: row, toC: tc, toR: tr });
+                        } else {
+                            if (dest.color !== color) moves.push({ fromC: col, fromR: row, toC: tc, toR: tr, capture: dest.type });
+                            break;
+                        }
+                        tc += dc;
+                        tr += dr;
+                    }
+                }
+            } else if (p.type === 'C') {
+                // Pháo đi thẳng, ăn cách 1 quân
+                const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+                for (const [dc, dr] of dirs) {
+                    let tc = col + dc;
+                    let tr = row + dr;
+                    let jumped = false;
+                    while (tc >= 0 && tc <= 8 && tr >= 0 && tr <= 9) {
+                        const dest = board[tr][tc];
+                        if (!jumped) {
+                            if (!dest) {
+                                moves.push({ fromC: col, fromR: row, toC: tc, toR: tr });
+                            } else {
+                                jumped = true;
+                            }
+                        } else {
+                            if (dest) {
+                                if (dest.color !== color) moves.push({ fromC: col, fromR: row, toC: tc, toR: tr, capture: dest.type });
+                                break;
+                            }
+                        }
+                        tc += dc;
+                        tr += dr;
+                    }
+                }
+            } else if (p.type === 'H') {
+                // Mã đi chữ L, kiểm tra cản chân mã
+                const deltas = [
+                    { dc: -1, dr: -2, bc: 0, br: -1 },
+                    { dc: 1, dr: -2, bc: 0, br: -1 },
+                    { dc: -1, dr: 2, bc: 0, br: 1 },
+                    { dc: 1, dr: 2, bc: 0, br: 1 },
+                    { dc: -2, dr: -1, bc: -1, br: 0 },
+                    { dc: -2, dr: 1, bc: -1, br: 0 },
+                    { dc: 2, dr: -1, bc: 1, br: 0 },
+                    { dc: 2, dr: 1, bc: 1, br: 0 }
+                ];
+                for (const d of deltas) {
+                    const tc = col + d.dc;
+                    const tr = row + d.dr;
+                    if (tc >= 0 && tc <= 8 && tr >= 0 && tr <= 9) {
+                        if (!board[row + d.br][col + d.bc]) addMove(tc, tr);
+                    }
+                }
+            } else if (p.type === 'P') {
+                // Tốt đi thẳng 1 bước, qua sông được đi ngang
+                if (color === 'red') {
+                    addMove(col, row - 1);
+                    if (row <= 4) {
+                        addMove(col - 1, row);
+                        addMove(col + 1, row);
+                    }
+                } else {
+                    addMove(col, row + 1);
+                    if (row >= 5) {
+                        addMove(col - 1, row);
+                        addMove(col + 1, row);
+                    }
+                }
+            }
+            return moves;
+        }
+
+        function makeCoTuongAiMove() {
+            if (ctGameOver) return;
+            const allMoves = [];
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const p = ctBoard[r][c];
+                    if (p && p.color === 'black') {
+                        const moves = getCtValidMoves(c, r, ctBoard);
+                        for (const m of moves) allMoves.push(m);
+                    }
+                }
+            }
+
+            if (allMoves.length === 0) {
+                ctGameOver = true;
+                updateCoTuongUI('Quân Đen hết nước đi! BẠN ĐÃ THẮNG!');
+                return;
+            }
+
+            // Đánh giá nước đi AI
+            let bestScore = -Infinity;
+            let bestMove = allMoves[0];
+
+            for (const m of allMoves) {
+                let score = 0;
+                // Điểm ăn quân
+                if (m.capture) {
+                    score += (ctPieceValues[m.capture] || 10) * 10;
+                }
+                // Thưởng tiến về phía trước
+                score += m.toR * 2;
+                // Thưởng kiểm soát trung lộ (cột 3, 4, 5)
+                if (m.toC >= 3 && m.toC <= 5) score += 4;
+                // Ngẫu nhiên nhẹ để nước đi sinh động
+                score += Math.random() * 6;
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = m;
+                }
+            }
+
+            executeCoTuongMove(bestMove);
+        }
+
+        function drawCoTuongBoard() {
+            ctCtx.clearRect(0, 0, ctCanvas.width, ctCanvas.height);
+
+            // Nền gỗ ấm cúng
+            ctCtx.fillStyle = '#231811';
+            ctCtx.fillRect(0, 0, ctCanvas.width, ctCanvas.height);
+
+            // Đường viền bàn cờ
+            ctCtx.strokeStyle = '#ca8a04';
+            ctCtx.lineWidth = 1.8;
+            ctCtx.strokeRect(CT_PAD_X, CT_PAD_Y, CT_CELL_W * 8, CT_CELL_H * 9);
+
+            // Các đường kẻ ngang (10 đường)
+            ctCtx.lineWidth = 1;
+            ctCtx.strokeStyle = 'rgba(202, 138, 4, 0.45)';
+            for (let r = 1; r < 9; r++) {
+                ctCtx.beginPath();
+                ctCtx.moveTo(CT_PAD_X, CT_PAD_Y + r * CT_CELL_H);
+                ctCtx.lineTo(CT_PAD_X + 8 * CT_CELL_W, CT_PAD_Y + r * CT_CELL_H);
+                ctCtx.stroke();
+            }
+
+            // Các đường kẻ dọc (cắt ở sông giữa hàng 4 và 5)
+            for (let c = 1; c < 8; c++) {
+                // Nửa trên (Đen)
+                ctCtx.beginPath();
+                ctCtx.moveTo(CT_PAD_X + c * CT_CELL_W, CT_PAD_Y);
+                ctCtx.lineTo(CT_PAD_X + c * CT_CELL_W, CT_PAD_Y + 4 * CT_CELL_H);
+                ctCtx.stroke();
+                // Nửa dưới (Đỏ)
+                ctCtx.beginPath();
+                ctCtx.moveTo(CT_PAD_X + c * CT_CELL_W, CT_PAD_Y + 5 * CT_CELL_H);
+                ctCtx.lineTo(CT_PAD_X + c * CT_CELL_W, CT_PAD_Y + 9 * CT_CELL_H);
+                ctCtx.stroke();
+            }
+
+            // Đường chéo Cửu Cung Đen (hàng 0-2, cột 3-5)
+            ctCtx.beginPath();
+            ctCtx.moveTo(CT_PAD_X + 3 * CT_CELL_W, CT_PAD_Y);
+            ctCtx.lineTo(CT_PAD_X + 5 * CT_CELL_W, CT_PAD_Y + 2 * CT_CELL_H);
+            ctCtx.moveTo(CT_PAD_X + 5 * CT_CELL_W, CT_PAD_Y);
+            ctCtx.lineTo(CT_PAD_X + 3 * CT_CELL_W, CT_PAD_Y + 2 * CT_CELL_H);
+            ctCtx.stroke();
+
+            // Đường chéo Cửu Cung Đỏ (hàng 7-9, cột 3-5)
+            ctCtx.beginPath();
+            ctCtx.moveTo(CT_PAD_X + 3 * CT_CELL_W, CT_PAD_Y + 7 * CT_CELL_H);
+            ctCtx.lineTo(CT_PAD_X + 5 * CT_CELL_W, CT_PAD_Y + 9 * CT_CELL_H);
+            ctCtx.moveTo(CT_PAD_X + 5 * CT_CELL_W, CT_PAD_Y + 7 * CT_CELL_H);
+            ctCtx.lineTo(CT_PAD_X + 3 * CT_CELL_W, CT_PAD_Y + 9 * CT_CELL_H);
+            ctCtx.stroke();
+
+            // Dòng chữ Sông Sở Hà - Hán Giới
+            ctCtx.fillStyle = 'rgba(217, 119, 6, 0.6)';
+            ctCtx.font = 'bold 13px sans-serif';
+            ctCtx.textAlign = 'center';
+            ctCtx.fillText('SỞ  HÀ', CT_PAD_X + 2 * CT_CELL_W, CT_PAD_Y + 4.65 * CT_CELL_H);
+            ctCtx.fillText('HÁN  GIỚI', CT_PAD_X + 6 * CT_CELL_W, CT_PAD_Y + 4.65 * CT_CELL_H);
+
+            // Highlight nước đi gần nhất (from và to)
+            if (ctLastMove) {
+                const fx = CT_PAD_X + ctLastMove.fromC * CT_CELL_W;
+                const fy = CT_PAD_Y + ctLastMove.fromR * CT_CELL_H;
+                const tx = CT_PAD_X + ctLastMove.toC * CT_CELL_W;
+                const ty = CT_PAD_Y + ctLastMove.toR * CT_CELL_H;
+
+                ctCtx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
+                ctCtx.lineWidth = 2;
+                ctCtx.strokeRect(fx - 18, fy - 18, 36, 36);
+                ctCtx.strokeStyle = '#f59e0b';
+                ctCtx.strokeRect(tx - 18, ty - 18, 36, 36);
+            }
+
+            // Vẽ các nước đi hợp lệ của quân đang chọn
+            for (const m of ctValidMoves) {
+                const mx = CT_PAD_X + m.toC * CT_CELL_W;
+                const my = CT_PAD_Y + m.toR * CT_CELL_H;
+                if (m.capture) {
+                    // Ô ăn quân: vòng tròn đỏ neon
+                    ctCtx.strokeStyle = '#ef4444';
+                    ctCtx.lineWidth = 2.5;
+                    ctCtx.beginPath();
+                    ctCtx.arc(mx, my, 19, 0, Math.PI * 2);
+                    ctCtx.stroke();
+                } else {
+                    // Ô di chuyển: chấm tròn xanh ngọc
+                    ctCtx.fillStyle = '#06b6d4';
+                    ctCtx.beginPath();
+                    ctCtx.arc(mx, my, 5.5, 0, Math.PI * 2);
+                    ctCtx.fill();
+                }
+            }
+
+            // Vẽ các quân cờ
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const p = ctBoard[r][c];
+                    if (!p) continue;
+
+                    const px = CT_PAD_X + c * CT_CELL_W;
+                    const py = CT_PAD_Y + r * CT_CELL_H;
+                    const isSel = ctSelected && ctSelected.col === c && ctSelected.row === r;
+
+                    // Hào quang nếu đang chọn
+                    if (isSel) {
+                        ctCtx.save();
+                        ctCtx.shadowColor = '#38bdf8';
+                        ctCtx.shadowBlur = 14;
+                        ctCtx.strokeStyle = '#38bdf8';
+                        ctCtx.lineWidth = 3;
+                        ctCtx.beginPath();
+                        ctCtx.arc(px, py, 20, 0, Math.PI * 2);
+                        ctCtx.stroke();
+                        ctCtx.restore();
+                    }
+
+                    // Khối tròn quân cờ 3D
+                    ctCtx.save();
+                    ctCtx.beginPath();
+                    ctCtx.arc(px, py, 17, 0, Math.PI * 2);
+
+                    if (p.color === 'red') {
+                        // Quân Đỏ: ngà vàng viền đỏ
+                        const grad = ctCtx.createRadialGradient(px - 3, py - 3, 2, px, py, 17);
+                        grad.addColorStop(0, '#fffbeb');
+                        grad.addColorStop(1, '#fef08a');
+                        ctCtx.fillStyle = grad;
+                        ctCtx.fill();
+                        ctCtx.strokeStyle = '#dc2626';
+                        ctCtx.lineWidth = 2;
+                        ctCtx.stroke();
+
+                        // Vòng tròn chỉ bên trong
+                        ctCtx.beginPath();
+                        ctCtx.arc(px, py, 14, 0, Math.PI * 2);
+                        ctCtx.strokeStyle = 'rgba(220, 38, 38, 0.35)';
+                        ctCtx.lineWidth = 1;
+                        ctCtx.stroke();
+
+                        // Chữ quân cờ
+                        ctCtx.fillStyle = '#b91c1c';
+                        ctCtx.font = 'bold 11px sans-serif';
+                        ctCtx.textAlign = 'center';
+                        ctCtx.textBaseline = 'middle';
+                        ctCtx.fillText(ctPieceNames[p.type], px, py + 0.5);
+                    } else {
+                        // Quân Đen: trắng bạc viền đen
+                        const grad = ctCtx.createRadialGradient(px - 3, py - 3, 2, px, py, 17);
+                        grad.addColorStop(0, '#f8fafc');
+                        grad.addColorStop(1, '#cbd5e1');
+                        ctCtx.fillStyle = grad;
+                        ctCtx.fill();
+                        ctCtx.strokeStyle = '#1e293b';
+                        ctCtx.lineWidth = 2;
+                        ctCtx.stroke();
+
+                        // Vòng tròn chỉ bên trong
+                        ctCtx.beginPath();
+                        ctCtx.arc(px, py, 14, 0, Math.PI * 2);
+                        ctCtx.strokeStyle = 'rgba(30, 41, 59, 0.35)';
+                        ctCtx.lineWidth = 1;
+                        ctCtx.stroke();
+
+                        // Chữ quân cờ
+                        ctCtx.fillStyle = '#0f172a';
+                        ctCtx.font = 'bold 11px sans-serif';
+                        ctCtx.textAlign = 'center';
+                        ctCtx.textBaseline = 'middle';
+                        ctCtx.fillText(ctPieceNames[p.type], px, py + 0.5);
+                    }
+                    ctCtx.restore();
+                }
+            }
+        }
+
     </script>
 </body>
 </html>
