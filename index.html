@@ -1095,6 +1095,46 @@
                             </button>
                         </div>
                     </div>
+
+                    <div class="app-featured-card">
+                        <div class="app-card-top">
+                            <div class="app-big-icon">🖥️</div>
+                            <div class="app-info-block">
+                                <h2 class="app-main-title">IDC Harness - Trợ Lý AI Quản Trị IDC</h2>
+                                <span class="app-sub-badge">Ứng Dụng Windows &amp; macOS • Hỗ Trợ Quản Trị Hệ Thống IDC</span>
+                            </div>
+                        </div>
+
+                        <p class="app-body-text">
+                            Hệ thống trợ lý AI phục vụ vận hành trung tâm dữ liệu (IDC): tra cứu <strong>SOP / tài liệu kỹ thuật</strong>, hỗ trợ <strong>xử lý sự cố</strong> và tư vấn dựa trên kho tri thức riêng của trung tâm — với bảng điều khiển web là nơi quản trị duy nhất và <strong>bot Telegram chỉ-đọc</strong> để hỏi đáp nhanh trong ca trực. Nút tải bên dưới trỏ thẳng tới bản phát hành mới nhất trên GitHub, nên <strong>luôn tải được bản mới nhất</strong> mà không cần đổi link.
+                        </p>
+
+                        <div class="app-tag-pills">
+                            <span class="app-pill">Windows 10/11 (.EXE)</span>
+                            <span class="app-pill">macOS 11+ (.DMG)</span>
+                            <span class="app-pill">Dashboard localhost:6868</span>
+                            <span class="app-pill">Bot Telegram chỉ-đọc</span>
+                            <span class="app-pill">Luôn là bản mới nhất</span>
+                            <span class="app-pill">Cần Internet khi cài lần đầu</span>
+                        </div>
+
+                        <div class="app-buttons-group">
+                            <a href="https://github.com/Tuanvilla/IDC-harness/releases/latest/download/IDC-Harness-Setup.exe" class="btn-download-primary">
+                                <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                                <span>Tải bản cài Windows (.EXE)</span>
+                            </a>
+
+                            <a href="https://github.com/Tuanvilla/IDC-harness/releases/latest/download/IDC-Harness-macOS.dmg" class="btn-guide-secondary" style="text-decoration: none;">
+                                <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                                <span>Bản macOS (.DMG)</span>
+                            </a>
+
+                            <button onclick="openStory('app-idc-harness')" class="btn-guide-secondary">
+                                <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 20 20"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg>
+                                <span>Xem hướng dẫn cài đặt &amp; sử dụng</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1387,6 +1427,40 @@
                     <p>- Khung ban ngày (ví dụ 17h00 - 19h00): Giờ kết thúc tự điền là <strong>18:00</strong>.</p>
                     <p>- Khung tối (ví dụ 21h00 - 23h00): Giờ kết thúc tự điền là <strong>22:00</strong>.</p>
                     <p>- Khung ca đêm qua ngày (ví dụ 24h00 - 02h00): Giờ kết thúc tự chuyển sang <strong>01:00</strong> của ngày hôm sau (+1 ngày).</p>
+                `
+            },
+            'app-idc-harness': {
+                category: 'Hướng dẫn sử dụng • IDC Harness',
+                title: 'Hướng dẫn cài đặt & sử dụng IDC Harness',
+                date: 'Tài liệu kỹ thuật • Tác giả: Tuấn Villa',
+                content: `
+                    <p><strong>IDC Harness</strong> là hệ thống trợ lý AI phục vụ vận hành trung tâm dữ liệu (IDC): tra cứu SOP / tài liệu kỹ thuật, hỗ trợ xử lý sự cố và tư vấn dựa trên kho tri thức riêng của trung tâm. Bảng điều khiển web (Dashboard) là nơi quản trị và ghi dữ liệu duy nhất; bot Telegram đóng vai trò kênh hỏi đáp chỉ-đọc phục vụ ca trực.</p>
+                    <div class="callout-box">Link tải trên trang này trỏ thẳng tới bản phát hành mới nhất (Latest Release) trên GitHub. Mỗi khi có bản cài mới, link tự động trỏ sang bản mới — anh em cứ bấm tải như cũ là nhận bản mới nhất. Chưa hết: bộ cài là bộ cài mỏng, khi chạy lần đầu sẽ tự tải mã nguồn mới nhất về máy, nên cài lúc nào cũng là bản mới.</div>
+                    <h3 style="color: var(--primary-cyan); font-size: 18px; margin-top: 14px;">1. Hướng dẫn cài đặt trên Windows (3 bước đơn giản):</h3>
+                    <div class="modal-step-box">
+                        <div class="modal-step-title">Bước 1: Tải và chạy bộ cài</div>
+                        <p>- Bấm nút <strong>Tải bản cài Windows (.EXE)</strong> ở mục Kho Ứng Dụng để tải file <strong>IDC-Harness-Setup.exe</strong> (khoảng 2,3 MB).</p>
+                        <p>- Chạy file vừa tải, chọn thư mục cài đặt khi được hỏi (để mặc định nếu không cần đổi).</p>
+                        <p>- Lần cài đầu tiên máy cần có <strong>Internet</strong> để bộ cài tải mã nguồn mới nhất từ GitHub — hãy chờ quá trình cài đặt hoàn tất, không tắt giữa chừng.</p>
+                    </div>
+                    <div class="modal-step-box">
+                        <div class="modal-step-title">Bước 2: Khởi động hệ thống</div>
+                        <p>- Mở <strong>IDC Harness</strong> từ shortcut / thư mục đã cài (hoặc chạy file khởi động trong thư mục cài đặt).</p>
+                        <p>- Mở trình duyệt truy cập: <code style="color: #38bdf8;">http://localhost:6868</code></p>
+                        <p>- Lần đầu truy cập, hệ thống sẽ yêu cầu <strong>tạo tài khoản quản trị</strong> — hãy đặt mật khẩu mạnh và lưu cẩn thận.</p>
+                    </div>
+                    <div class="modal-step-box">
+                        <div class="modal-step-title">Bước 3: Cấu hình trong Dashboard</div>
+                        <p>- Vào trang <strong>Models / Cài đặt</strong> trong Dashboard để kết nối mô hình AI (API key hoặc CLI) theo hướng dẫn trên màn hình.</p>
+                        <p>- Nạp tài liệu, SOP của đơn vị mình vào kho tri thức (Brain) qua Dashboard — hệ thống trả lời dựa trên chính kho tài liệu này.</p>
+                        <p>- Nếu dùng bot Telegram: kết nối bot trong Dashboard và hỏi đáp trực tiếp trong ca trực (bot chỉ đọc, không ghi dữ liệu).</p>
+                    </div>
+                    <h3 style="color: var(--primary-cyan); font-size: 18px; margin-top: 16px;">2. Trên macOS:</h3>
+                    <p>- Tải file <strong>IDC-Harness-macOS.dmg</strong> (nút Bản macOS trong Kho Ứng Dụng), mở file và làm theo hướng dẫn cài đặt, sau đó mở <code style="color: #38bdf8;">http://localhost:6868</code> như trên Windows.</p>
+                    <h3 style="color: var(--primary-cyan); font-size: 18px; margin-top: 16px;">3. Lưu ý quan trọng:</h3>
+                    <p>- <strong>Yêu cầu hệ thống:</strong> Windows 10/11 hoặc macOS 11 trở lên, có Internet khi cài lần đầu và khi cập nhật.</p>
+                    <p>- Bộ cài công khai <strong>không kèm theo kho tri thức IDC riêng</strong> của tác giả — mỗi đơn vị tự nạp tài liệu của mình để hệ thống tư vấn đúng thực tế tại chỗ.</p>
+                    <p>- Muốn cập nhật lên bản mới: cài lại bằng đúng link tải trên trang này (luôn là bản mới nhất) hoặc dùng tính năng cập nhật trong Dashboard nếu có.</p>
                 `
             }
         };
