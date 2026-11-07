@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xóm Nhà Lá Tech | Tuấn Villa</title>
-    <meta name="description" content="Xóm Nhà Lá Tech - Góc tâm sự mộc mạc, kho tiện ích và 3 mini game giải trí của Tuấn Villa.">
+    <meta name="description" content="Xóm Nhà Lá Tech - Góc tâm sự mộc mạc, kho tiện ích và 4 mini game giải trí của Tuấn Villa.">
     <meta property="og:title" content="Xóm Nhà Lá Tech | Tuấn Villa">
-    <meta property="og:description" content="Góc tâm sự mộc mạc, kho tiện ích và 3 mini game giải trí của Tuấn Villa.">
+    <meta property="og:description" content="Góc tâm sự mộc mạc, kho tiện ích và 4 mini game giải trí của Tuấn Villa.">
     <meta property="og:url" content="https://xomnhala.tech">
     <meta property="og:type" content="website">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
@@ -682,6 +682,52 @@
 
         .dpad-btn:active { background: var(--primary-cyan); }
 
+        /* Candy Crush (Match-3) */
+        .candy-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+        }
+
+        .candy-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            width: min(400px, 92vw);
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-sizing: border-box;
+        }
+
+        .candy-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(17px, 5.5vw, 26px);
+            border-radius: 9px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: transform 0.15s ease, opacity 0.2s ease, box-shadow 0.15s ease;
+            touch-action: manipulation;
+        }
+
+        .candy-cell:hover { transform: scale(1.07); }
+
+        .candy-selected {
+            box-shadow: 0 0 0 3px #ffffff, 0 0 14px rgba(255, 255, 255, 0.65);
+            transform: scale(1.1);
+        }
+
+        .candy-matched { opacity: 0.15; transform: scale(0.55); }
+
+        .candy-empty { background: transparent !important; cursor: default; }
+
         /* Snake Canvas */
         .snake-stage {
             display: flex;
@@ -1053,18 +1099,18 @@
                 </div>
             </div>
 
-            <!-- 3. GÓC GIẢI TRÍ (3 MINI GAMES) -->
+            <!-- 3. GÓC GIẢI TRÍ (4 MINI GAMES) -->
             <div id="viewGames" style="display: none;">
                 <header class="feed-header">
                     <h1 class="feed-title">
                         <span>🎮</span> Góc Giải Trí • Xóm Nhà Lá Arcade
                     </h1>
                     <p class="feed-subtitle">
-                        3 Mini Game giải trí xả stress, chơi trực tiếp trên trình duyệt 0đ cực nuột!
+                        4 Mini Game giải trí xả stress, chơi trực tiếp trên trình duyệt 0đ cực nuột!
                     </p>
                 </header>
 
-                <!-- Danh sách 3 Game Cards -->
+                <!-- Danh sách 4 Game Cards -->
                 <div id="gamesCatalog" class="games-grid" style="margin-top: 24px;">
                     <!-- Game 1: Datacenter Runner -->
                     <div class="game-card">
@@ -1113,6 +1159,23 @@
                             Điều khiển sợi dây cáp quang phát sáng neon săn các gói dữ liệu data packet trong phòng máy. Game tuổi thơ không bao giờ chán.
                         </p>
                         <button class="btn-play-game" onclick="launchGame('snake')">
+                            <span>Chơi Ngay &rarr;</span>
+                        </button>
+                    </div>
+
+                    <!-- Game 4: Candy Crush -->
+                    <div class="game-card">
+                        <div class="game-card-head">
+                            <div class="game-icon">🍬</div>
+                            <div>
+                                <h3 class="game-title">Candy Crush - Xếp Kẹo Ngọt</h3>
+                                <span class="game-tag">Match-3 • Gây Nghiện</span>
+                            </div>
+                        </div>
+                        <p class="game-desc">
+                            Đổi chỗ các viên kẹo để tạo hàng từ 3 viên cùng loại trở lên, ăn điểm theo combo dây chuyền. Đạt 1.500 điểm trong 30 lượt đi để thắng — game xả stress huyền thoại!
+                        </p>
+                        <button class="btn-play-game" onclick="launchGame('candy')">
                             <span>Chơi Ngay &rarr;</span>
                         </button>
                     </div>
@@ -1183,6 +1246,25 @@
                             <button class="dpad-btn" onclick="changeSnakeDir('DOWN')">&darr;</button>
                             <button class="dpad-btn" onclick="changeSnakeDir('RIGHT')">&rarr;</button>
                         </div>
+                    </div>
+
+                    <!-- Arena Game 4: Candy Crush -->
+                    <div id="stageCandy" class="candy-stage" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 400px; font-weight: 700; font-size: 14.5px;">
+                            <div>Điểm: <span id="candyScore" style="color: #f472b6;">0</span></div>
+                            <div>Lượt: <span id="candyMoves" style="color: var(--primary-cyan);">30</span></div>
+                            <div>Mục tiêu: <span id="candyTarget" style="color: #f59e0b;">1500</span></div>
+                        </div>
+
+                        <div id="candyMsg" style="color: var(--accent-green); font-weight: 600; text-align: center; min-height: 20px;">Đổi chỗ 2 viên kẹo kề nhau để tạo hàng 3 viên trở lên!</div>
+
+                        <div id="candyBoard" class="candy-board"></div>
+
+                        <div style="font-size: 13px; color: var(--text-muted); text-align: center;">
+                            Bấm chọn 1 viên kẹo, rồi bấm viên kề bên (ngang / dọc) để đổi chỗ. Ăn từ 3 viên cùng loại trở lên để ghi điểm, ăn dây chuyền được nhân combo!
+                        </div>
+
+                        <button class="btn-download-primary" onclick="initCandy()" style="padding: 8px 18px; font-size: 13.5px;">Ván Mới</button>
                     </div>
 
                 </div>
@@ -1377,7 +1459,7 @@
             const arena = document.getElementById('gameArena');
             arena.style.display = 'flex';
 
-            const stages = ['Runner', '2048', 'Snake'];
+            const stages = ['Runner', '2048', 'Snake', 'Candy'];
             stages.forEach(s => {
                 const el = document.getElementById('stage' + s);
                 if (el) el.style.display = 'none';
@@ -1395,6 +1477,10 @@
                 document.getElementById('arenaTitle').innerHTML = '<span>🐍</span> Rắn Săn Mồi Cáp Quang';
                 document.getElementById('stageSnake').style.display = 'flex';
                 initSnake();
+            } else if (game === 'candy') {
+                document.getElementById('arenaTitle').innerHTML = '<span>🍬</span> Candy Crush - Xếp Kẹo Ngọt';
+                document.getElementById('stageCandy').style.display = 'flex';
+                initCandy();
             }
         }
 
@@ -2070,6 +2156,197 @@
             snakeCtx.shadowBlur = 0;
         }
     
+
+        // ==========================================
+        // GAME 4: CANDY CRUSH - XẾP KẸO NGỌT (MATCH-3)
+        // ==========================================
+        const CANDY_SIZE = 8;
+        const CANDY_TYPES = [
+            { e: '🍬', bg: '#f9a8d4' },
+            { e: '🍭', bg: '#7dd3fc' },
+            { e: '🍋', bg: '#fde047' },
+            { e: '🍇', bg: '#c4b5fd' },
+            { e: '🍓', bg: '#fca5a5' },
+            { e: '🍏', bg: '#86efac' }
+        ];
+        let candyBoard = [];
+        let candyScore = 0;
+        let candyMoves = 0;
+        let candyTarget = 1500;
+        let candySelected = -1;
+        let candyLock = false;
+        let candyOver = false;
+
+        function candyRand() { return Math.floor(Math.random() * CANDY_TYPES.length); }
+        function candyIdx(r, c) { return r * CANDY_SIZE + c; }
+
+        function initCandy() {
+            candyScore = 0;
+            candyMoves = 30;
+            candyTarget = 1500;
+            candySelected = -1;
+            candyLock = false;
+            candyOver = false;
+            do { candyGenBoard(); } while (!candyHasMove());
+            renderCandy();
+            updateCandyHud('Đổi chỗ 2 viên kẹo kề nhau để tạo hàng 3 viên trở lên!');
+        }
+
+        function candyGenBoard() {
+            candyBoard = new Array(CANDY_SIZE * CANDY_SIZE).fill(0);
+            for (let r = 0; r < CANDY_SIZE; r++) {
+                for (let c = 0; c < CANDY_SIZE; c++) {
+                    let t;
+                    do { t = candyRand(); }
+                    while ((c >= 2 && candyBoard[candyIdx(r, c - 1)] === t && candyBoard[candyIdx(r, c - 2)] === t) ||
+                           (r >= 2 && candyBoard[candyIdx(r - 1, c)] === t && candyBoard[candyIdx(r - 2, c)] === t));
+                    candyBoard[candyIdx(r, c)] = t;
+                }
+            }
+        }
+
+        function candyFindMatches() {
+            const matched = new Set();
+            for (let r = 0; r < CANDY_SIZE; r++) {
+                let runStart = 0;
+                for (let c = 1; c <= CANDY_SIZE; c++) {
+                    const v = c < CANDY_SIZE ? candyBoard[candyIdx(r, c)] : null;
+                    const v0 = candyBoard[candyIdx(r, runStart)];
+                    if (v !== null && v === v0) continue;
+                    if (v0 !== null && c - runStart >= 3) for (let k = runStart; k < c; k++) matched.add(candyIdx(r, k));
+                    runStart = c;
+                }
+            }
+            for (let c = 0; c < CANDY_SIZE; c++) {
+                let runStart = 0;
+                for (let r = 1; r <= CANDY_SIZE; r++) {
+                    const v = r < CANDY_SIZE ? candyBoard[candyIdx(r, c)] : null;
+                    const v0 = candyBoard[candyIdx(runStart, c)];
+                    if (v !== null && v === v0) continue;
+                    if (v0 !== null && r - runStart >= 3) for (let k = runStart; k < r; k++) matched.add(candyIdx(k, c));
+                    runStart = r;
+                }
+            }
+            return matched;
+        }
+
+        function candyHasMove() {
+            const trySwap = (a, b) => {
+                const tmp = candyBoard[a]; candyBoard[a] = candyBoard[b]; candyBoard[b] = tmp;
+                const ok = candyFindMatches().size > 0;
+                const tmp2 = candyBoard[a]; candyBoard[a] = candyBoard[b]; candyBoard[b] = tmp2;
+                return ok;
+            };
+            for (let r = 0; r < CANDY_SIZE; r++) {
+                for (let c = 0; c < CANDY_SIZE; c++) {
+                    if (c + 1 < CANDY_SIZE && trySwap(candyIdx(r, c), candyIdx(r, c + 1))) return true;
+                    if (r + 1 < CANDY_SIZE && trySwap(candyIdx(r, c), candyIdx(r + 1, c))) return true;
+                }
+            }
+            return false;
+        }
+
+        function renderCandy(matched) {
+            const box = document.getElementById('candyBoard');
+            if (!box) return;
+            let html = '';
+            for (let i = 0; i < candyBoard.length; i++) {
+                const t = candyBoard[i];
+                if (t === null) { html += '<div class="candy-cell candy-empty"></div>'; continue; }
+                const cls = ['candy-cell'];
+                if (i === candySelected) cls.push('candy-selected');
+                if (matched && matched.has(i)) cls.push('candy-matched');
+                html += `<div class="${cls.join(' ')}" style="background: ${CANDY_TYPES[t].bg};" onclick="selectCandy(${i})">${CANDY_TYPES[t].e}</div>`;
+            }
+            box.innerHTML = html;
+        }
+
+        function updateCandyHud(msg) {
+            const s = document.getElementById('candyScore'); if (s) s.textContent = candyScore;
+            const m = document.getElementById('candyMoves'); if (m) m.textContent = candyMoves;
+            const t = document.getElementById('candyTarget'); if (t) t.textContent = candyTarget;
+            if (msg !== undefined) { const el = document.getElementById('candyMsg'); if (el) el.textContent = msg; }
+        }
+
+        function selectCandy(i) {
+            if (candyLock || candyOver) return;
+            if (candySelected === -1) { candySelected = i; renderCandy(); return; }
+            if (candySelected === i) { candySelected = -1; renderCandy(); return; }
+            const a = candySelected, b = i;
+            const ar = Math.floor(a / CANDY_SIZE), ac = a % CANDY_SIZE;
+            const br = Math.floor(b / CANDY_SIZE), bc = b % CANDY_SIZE;
+            if (Math.abs(ar - br) + Math.abs(ac - bc) !== 1) { candySelected = i; renderCandy(); return; }
+            candySelected = -1;
+            candySwap(a, b);
+        }
+
+        function candySwap(a, b) {
+            candyLock = true;
+            const tmp = candyBoard[a]; candyBoard[a] = candyBoard[b]; candyBoard[b] = tmp;
+            renderCandy();
+            setTimeout(() => {
+                if (candyFindMatches().size === 0) {
+                    const tmp2 = candyBoard[a]; candyBoard[a] = candyBoard[b]; candyBoard[b] = tmp2;
+                    renderCandy();
+                    candyLock = false;
+                    updateCandyHud('Chưa tạo được hàng 3 — thử nước khác nhé!');
+                    return;
+                }
+                candyMoves--;
+                updateCandyHud();
+                candyResolve(1);
+            }, 160);
+        }
+
+        function candyResolve(combo) {
+            const matched = candyFindMatches();
+            if (matched.size === 0) {
+                renderCandy();
+                candyLock = false;
+                candyAfterTurn();
+                return;
+            }
+            const gained = matched.size * 10 * combo;
+            candyScore += gained;
+            updateCandyHud(combo > 1 ? `Combo x${combo}! +${gained} điểm` : `+${gained} điểm`);
+            renderCandy(matched);
+            setTimeout(() => {
+                matched.forEach(i => { candyBoard[i] = null; });
+                candyCollapse();
+                renderCandy();
+                setTimeout(() => candyResolve(combo + 1), 140);
+            }, 260);
+        }
+
+        function candyCollapse() {
+            for (let c = 0; c < CANDY_SIZE; c++) {
+                let write = CANDY_SIZE - 1;
+                for (let r = CANDY_SIZE - 1; r >= 0; r--) {
+                    const v = candyBoard[candyIdx(r, c)];
+                    if (v !== null) {
+                        candyBoard[candyIdx(write, c)] = v;
+                        if (write !== r) candyBoard[candyIdx(r, c)] = null;
+                        write--;
+                    }
+                }
+                for (let r = write; r >= 0; r--) candyBoard[candyIdx(r, c)] = candyRand();
+            }
+        }
+
+        function candyAfterTurn() {
+            if (candyMoves <= 0) {
+                candyOver = true;
+                if (candyScore >= candyTarget) updateCandyHud(`🎉 Thắng rồi! Đạt ${candyScore} điểm — bấm Ván Mới để chơi tiếp!`);
+                else updateCandyHud(`Hết lượt! Được ${candyScore}/${candyTarget} điểm — bấm Ván Mới thử lại nhé!`);
+                return;
+            }
+            if (!candyHasMove()) {
+                updateCandyHud('Hết nước đi — xáo lại bàn, điểm và lượt giữ nguyên!');
+                do { candyGenBoard(); } while (!candyHasMove());
+                renderCandy();
+            }
+        }
+
     </script>
 </body>
 </html>
