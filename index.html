@@ -1213,6 +1213,7 @@
                     <div id="stage2048" class="game-2048-stage" style="display: none;">
                         <div style="display: flex; justify-content: space-between; width: 320px; font-weight: 700;">
                             <div>Điểm: <span id="score2048" style="color: var(--primary-cyan);">0</span></div>
+                            <button class="btn-back-games" id="btnMusic2048" onclick="toggleMusic2048()">🔊 Nhạc: Bật</button>
                             <button class="btn-back-games" onclick="init2048()">Chơi mới</button>
                         </div>
 
@@ -1454,6 +1455,7 @@
         let currentGame = null;
 
         function launchGame(game) {
+            if (game !== '2048') stopMusic2048();
             currentGame = game;
             document.getElementById('gamesCatalog').style.display = 'none';
             const arena = document.getElementById('gameArena');
@@ -1490,6 +1492,7 @@
             const badge = document.getElementById('runnerPowerupBadge');
             if (badge) badge.style.display = 'none';
             if (snakeInterval) clearInterval(snakeInterval);
+            stopMusic2048();
             document.getElementById('gamesCatalog').style.display = 'grid';
             document.getElementById('gameArena').style.display = 'none';
             currentGame = null;
@@ -1975,6 +1978,8 @@
             addRandom2048();
             render2048();
             window.addEventListener('keydown', handle2048Key);
+            startMusic2048();
+            updateMusicBtn();
         }
 
         function handle2048Key(e) {
@@ -2019,6 +2024,8 @@
             }
         }
 
+        let mergeFx2048 = 0;
+
         function move2048(dir) {
             let moved = false;
             let rotated = board2048;
@@ -2035,6 +2042,7 @@
                     if (row[i] === row[i + 1]) {
                         row[i] *= 2;
                         score2048 += row[i];
+                        mergeFx2048 = Math.max(mergeFx2048, row[i]);
                         row[i + 1] = 0;
                     }
                 }
@@ -2053,7 +2061,158 @@
                 document.getElementById('score2048').textContent = score2048;
                 addRandom2048();
                 render2048();
+                if (mergeFx2048 > 0) { playMerge2048(mergeFx2048); mergeFx2048 = 0; }
+                else playSlide2048();
             }
+        }
+
+
+        // ==========================================
+        // NHẠC NỀN + HIỆU ỨNG CHO GAME 2048 (Web Audio tự sinh, không cần file nhạc)
+        // Giai điệu chill lo-fi: hợp âm Cmaj7 - Am7 - Fmaj7 - G6, nốt gảy ngũ cung nhẹ
+        // ==========================================
+        let musicCtx = null;
+        let musicGain = null;
+        let sfxGain = null;
+        let musicTimer = null;
+        let musicStep = 0;
+        let musicNextTime = 0;
+        let musicPlaying = false;
+        let musicEnabled = true;
+        try { musicEnabled = localStorage.getItem('music2048') !== 'off'; } catch (e) { musicEnabled = true; }
+
+        const MUSIC_CHORDS = [
+            { bass: 48, tones: [60, 64, 67, 71] },
+            { bass: 45, tones: [57, 60, 64, 67] },
+            { bass: 41, tones: [53, 57, 60, 64] },
+            { bass: 43, tones: [55, 59, 62, 67] }
+        ];
+
+        function mtof2048(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+
+        function ensureAudio2048() {
+            if (musicCtx) return true;
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return false;
+            musicCtx = new AC();
+            musicGain = musicCtx.createGain();
+            musicGain.gain.value = 0.9;
+            musicGain.connect(musicCtx.destination);
+            sfxGain = musicCtx.createGain();
+            sfxGain.gain.value = 0.5;
+            sfxGain.connect(musicCtx.destination);
+            return true;
+        }
+
+        function musicNote2048(freq, time, dur, type, vol, dest) {
+            const o = musicCtx.createOscillator();
+            const g = musicCtx.createGain();
+            o.type = type;
+            o.frequency.value = freq;
+            g.gain.setValueAtTime(0, time);
+            g.gain.linearRampToValueAtTime(vol, time + 0.03);
+            g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+            o.connect(g);
+            g.connect(dest);
+            o.start(time);
+            o.stop(time + dur + 0.05);
+        }
+
+        function musicPad2048(chord, time) {
+            chord.tones.forEach(m => {
+                const o = musicCtx.createOscillator();
+                const g = musicCtx.createGain();
+                o.type = 'triangle';
+                o.frequency.value = mtof2048(m);
+                g.gain.setValueAtTime(0, time);
+                g.gain.linearRampToValueAtTime(0.026, time + 0.6);
+                g.gain.setValueAtTime(0.026, time + 3.2);
+                g.gain.linearRampToValueAtTime(0, time + 4.0);
+                o.connect(g);
+                g.connect(musicGain);
+                o.start(time);
+                o.stop(time + 4.05);
+            });
+        }
+
+        function musicPlayStep2048(step, time) {
+            const chord = MUSIC_CHORDS[Math.floor(step / 8) % MUSIC_CHORDS.length];
+            const s = step % 8;
+            if (s === 0) {
+                musicPad2048(chord, time);
+                musicNote2048(mtof2048(chord.bass), time, 1.8, 'sine', 0.11, musicGain);
+            }
+            if (s === 4) musicNote2048(mtof2048(chord.bass + 7), time, 1.2, 'sine', 0.045, musicGain);
+            if ([0, 2, 3, 5, 6].includes(s) && Math.random() > 0.25) {
+                const pool = chord.tones.map(t => t + 12);
+                const m = pool[Math.floor(Math.random() * pool.length)];
+                musicNote2048(mtof2048(m), time, 0.9, 'sine', 0.05, musicGain);
+            }
+        }
+
+        function musicSchedule2048() {
+            while (musicNextTime < musicCtx.currentTime + 0.35) {
+                musicPlayStep2048(musicStep, musicNextTime);
+                musicNextTime += 0.5;
+                musicStep = (musicStep + 1) % 32;
+            }
+        }
+
+        function startMusic2048() {
+            if (!musicEnabled) { updateMusicBtn(); return; }
+            if (!ensureAudio2048()) return;
+            if (musicCtx.state === 'suspended') musicCtx.resume();
+            musicGain.gain.cancelScheduledValues(musicCtx.currentTime);
+            musicGain.gain.setTargetAtTime(0.9, musicCtx.currentTime, 0.05);
+            if (musicPlaying) return;
+            musicPlaying = true;
+            musicStep = 0;
+            musicNextTime = musicCtx.currentTime + 0.06;
+            musicTimer = setInterval(musicSchedule2048, 120);
+            updateMusicBtn();
+        }
+
+        function stopMusic2048() {
+            musicPlaying = false;
+            if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
+            if (musicCtx && musicGain) {
+                const t = musicCtx.currentTime;
+                musicGain.gain.cancelScheduledValues(t);
+                musicGain.gain.setTargetAtTime(0, t, 0.08);
+            }
+            updateMusicBtn();
+        }
+
+        function toggleMusic2048() {
+            musicEnabled = !musicEnabled;
+            try { localStorage.setItem('music2048', musicEnabled ? 'on' : 'off'); } catch (e) {}
+            if (musicEnabled) {
+                if (musicCtx && musicGain) musicGain.gain.setTargetAtTime(0.9, musicCtx.currentTime, 0.05);
+                if (currentGame === '2048') startMusic2048();
+            } else {
+                stopMusic2048();
+            }
+            updateMusicBtn();
+        }
+
+        function updateMusicBtn() {
+            const b = document.getElementById('btnMusic2048');
+            if (b) b.textContent = musicEnabled ? '🔊 Nhạc: Bật' : '🔇 Nhạc: Tắt';
+        }
+
+        function playSlide2048() {
+            if (!musicCtx || !musicEnabled || currentGame !== '2048') return;
+            musicNote2048(196, musicCtx.currentTime, 0.08, 'sine', 0.045, sfxGain);
+        }
+
+        function playMerge2048(tile) {
+            if (!musicCtx || !musicEnabled || currentGame !== '2048') return;
+            const ladder = [0, 2, 4, 7, 9];
+            const n = Math.max(0, Math.log2(tile) - 2);
+            const semi = ladder[n % 5] + 12 * Math.floor(n / 5);
+            const t = musicCtx.currentTime;
+            musicNote2048(mtof2048(72 + semi), t, 0.28, 'triangle', 0.14, sfxGain);
+            musicNote2048(mtof2048(72 + semi + 12), t + 0.02, 0.22, 'sine', 0.05, sfxGain);
         }
 
         // ==========================================
